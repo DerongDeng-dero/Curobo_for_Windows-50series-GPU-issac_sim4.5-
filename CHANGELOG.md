@@ -10,17 +10,83 @@ its affiliates is strictly prohibited.
 -->
 # Changelog
 
-## Latest Commit
+## Version 0.7.7
+
+### New Features
+- Add cpu support for types.math.Pose
+- Add cdist fallback for robot segmentation when triton is not available. Requires half the memory.
+
+### BugFixes & Misc.
+- Fix bug in LBFGS where buffers were not reinitialized upon change in history.
+- Isaac Sim 4.5 support for examples. All but one example works now. ``load_all_robots.py`` does
+not work correctly.
+- Fix bug in jerk gradient calculation. Improves convergence in trajectory optimization. Multi-arm
+reacher is slightly improved (see isaac sim example).
+
+
+## Version 0.7.6
+
+### Changes in Default Behavior
+- Acceleration and Jerk in Output trajectory from motion_gen is not filtered. Previously, this was
+filtered with a sliding window to remove aliasing artifacts. To get previous behavior, set
+`filter_robot_command=True` in `MotionGenConfig.load_from_robot_config()`.
+- Terminal action for motion planning is now fixed from initial seed. This improves accuracy (10x).
+To get previous behavior, set `trajopt_fix_terminal_action=True` and also
+`trajopt_js_fix_terminal_action=True` in `MotionGenConfig.load_from_robot_config()`.
+- Introduce higher accuracy weights for IK in `gradient_ik_autotune.yml`. To use old file,
+pass `gradient_ik_file='gradient_ik.yml'` in `MotionGenConfig.load_from_robot_config()`. Similarly
+for IKSolver, pass `gradient_file='gradient_ik.yml'` in `IKSolverConfig.load_from_robot_config()`.
+
+### New Features
+- Add fix terminal action in quasi-netwon solvers. This keeps the final action constant (from
+initial seed) and only optimizing for the remaining states. Improved accuracy in
+reaching targets (10x improvement for Cartesian pose targets and exact reaching for joint position
+targets).
+
+
+### BugFixes & Misc.
+
+- Fix bug (opposite sign) in gradient calculation for jerk. Trajectory optimizaiton generates
+shorter motion time trajectories.
+- Fix numerical precision issues when calculating linear interpolated seeds by copying terminal
+state to final action of trajectory after interpolation.
+
+
+## Version 0.7.5
+
+### Changes in Default Behavior
+- Remove explicit global seed setting for numpy and random. To enforce deterministic behavior,
+use `np.random.seed(2)` and `random.seed(2)` in your program.
+- geom.types.VoxelGrid now uses a different algorithm to calculate number of voxels per dimension
+and also to compute xyz locations in a grid. This new implementation matches implementation in
+nvblox.
 
 ### New Features
 - Add pose cost metric to MPC to allow for partial pose reaching.
 - Update obstacle poses in cpu reference with an optional flag.
+- Add planning to grasp API in ``MotionGen.plan_grasp`` that plans a sequence of motions to grasp
+an object given grasp poses. This API also provides args to disable collisions during the grasping
+phase.
+- Constrained planning can now use either goal frame or base frame at runtime.
 
 ### BugFixes & Misc.
 - Fixed optimize_dt not being correctly set when motion gen is called in reactive mode.
 - Add documentation for geom module.
 - Add descriptive api for computing kinematics.
 - Fix cv2 import order in isaac sim realsense examples.
+- Fix attach sphere api mismatch in ``TrajOptSolver``.
+- Fix bug in ``get_spline_interpolated_trajectory`` where
+numpy array was created instead of torch tensor.
+- Fix gradient bug when sphere origin is exactly at face of a cuboid.
+- Add support for parsing Yaml 1.2 format with an updated regex for scientific notations.
+- Move to yaml `SafeLoader` from `Loader`.
+- Graph search checks if a node exists before attempting to find a path.
+- Fix `steps_max` becoming 0 when optimized dt has NaN values.
+- Clone `MotionGenPlanConfig` instance for every plan api.
+- Improve sphere position to voxel location calculation to match nvblox's implementation.
+- Add self collision checking support for spheres > 1024 and number of checks > 512 * 1024.
+- Fix gradient passthrough in warp batch transform kernels.
+- Remove torch.Size() initialization with device kwarg.
 
 ## Version 0.7.4
 

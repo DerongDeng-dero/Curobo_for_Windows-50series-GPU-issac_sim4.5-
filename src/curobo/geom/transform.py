@@ -20,7 +20,6 @@ import torch
 import warp as wp
 
 # CuRobo
-from curobo.curobolib.kinematics import rotation_matrix_to_quaternion
 from curobo.util.logger import log_error
 from curobo.util.torch_utils import get_torch_jit_decorator
 from curobo.util.warp import init_warp
@@ -174,31 +173,6 @@ def matrix_to_quaternion(
     """
     matrix = matrix.view(-1, 3, 3)
     out_quat = MatrixToQuaternion.apply(matrix, out_quat, adj_matrix)
-    # out_quat = cuda_matrix_to_quaternion(matrix)
-    return out_quat
-
-
-def cuda_matrix_to_quaternion(matrix: torch.Tensor) -> torch.Tensor:
-    """Convert rotations given as rotation matrices to quaternions.
-
-    This is not differentiable. Use :func:`~matrix_to_quaternion` for differentiable conversion.
-    Args:
-        matrix: Rotation matrices as tensor of shape (..., 3, 3).
-
-    Returns:
-        quaternions with real part first, as tensor of shape (..., 4). [qw, qx,qy,qz]
-    """
-    if matrix.size(-1) != 3 or matrix.size(-2) != 3:
-        raise ValueError(f"Invalid rotation matrix  shape f{matrix.shape}.")
-
-    # account for different batch shapes here:
-    in_shape = matrix.shape
-    mat_in = matrix.view(-1, 3, 3)
-
-    out_quat = torch.zeros((mat_in.shape[0], 4), device=matrix.device, dtype=matrix.dtype)
-    out_quat = rotation_matrix_to_quaternion(matrix, out_quat)
-    out_shape = list(in_shape[:-2]) + [4]
-    out_quat = out_quat.view(out_shape)
     return out_quat
 
 
@@ -427,11 +401,7 @@ def compute_pose_inverse(
     # write pt:
     out_q = wp.transform_get_rotation(t_3)
 
-    out_v = wp.vec4()
-    out_v[0] = out_q[3]  # out_q[3]
-    out_v[1] = out_q[0]  # [0]
-    out_v[2] = out_q[1]  # wp.extract(out_q, 1)
-    out_v[3] = out_q[2]  # wp.extract(out_q, 2)
+    out_v = wp.vec4(out_q[3], out_q[0], out_q[1], out_q[2])
 
     out_position[b_idx] = wp.transform_get_translation(t_3)
     out_quat[b_idx] = out_v
@@ -453,11 +423,7 @@ def compute_matrix_to_quat(
     # create a transform from a vector/quaternion:
     out_q = wp.quat_from_matrix(in_m)
 
-    out_v = wp.vec4()
-    out_v[0] = out_q[3]  # wp.extract(out_q, 3)
-    out_v[1] = out_q[0]  # wp.extract(out_q, 0)
-    out_v[2] = out_q[1]  # wp.extract(out_q, 1)
-    out_v[3] = out_q[2]  # wp.extract(out_q, 2)
+    out_v = wp.vec4(out_q[3], out_q[0], out_q[1], out_q[2])
     # write pt:
     out_quat[b_idx] = out_v
 
@@ -530,6 +496,41 @@ def compute_batch_transform_point(
 
 
 @wp.kernel
+def compute_batch_transform_point_fp16(
+    position: wp.array(dtype=wp.vec3h),
+    quat: wp.array(dtype=wp.vec4h),
+    pt: wp.array(dtype=wp.vec3h),
+    n_pts: wp.int32,
+    n_poses: wp.int32,
+    out_pt: wp.array(dtype=wp.vec3h),
+):
+    """A warp kernel to transform batch of points by batch of poses."""
+
+    # given n,3 points and b poses, get b,n,3 transformed points
+    # we tile as
+    tid = wp.tid()
+    b_idx = tid / (n_pts)
+    p_idx = tid - (b_idx * n_pts)
+
+    # read data:
+
+    in_position = position[b_idx]
+    in_quat = quat[b_idx]
+    in_pt = pt[b_idx * n_pts + p_idx]
+
+    # read point
+    # create a transform from a vector/quaternion:
+    q_vec = wp.quaternion(in_quat[1], in_quat[2], in_quat[3], in_quat[0])
+    t = wp.transformh(in_position, q_vec)
+
+    # transform a point
+    p = wp.transform_point(t, in_pt)
+
+    # write pt:
+    out_pt[b_idx * n_pts + p_idx] = p
+
+
+@wp.kernel
 def compute_batch_pose_multipy(
     position: wp.array(dtype=wp.vec3),
     quat: wp.array(dtype=wp.vec4),
@@ -562,11 +563,7 @@ def compute_batch_pose_multipy(
     # write pt:
     out_q = wp.transform_get_rotation(t_3)
 
-    out_v = wp.vec4()
-    out_v[0] = out_q[3]
-    out_v[1] = out_q[0]
-    out_v[2] = out_q[1]
-    out_v[3] = out_q[2]
+    out_v = wp.vec4(out_q[3], out_q[0], out_q[1], out_q[2])
 
     out_position[b_idx] = wp.transform_get_translation(t_3)
     out_quat[b_idx] = out_v
@@ -626,11 +623,7 @@ def compute_pose_multipy(
     # write pt:
     out_q = wp.transform_get_rotation(t_3)
 
-    out_v = wp.vec4()
-    out_v[0] = out_q[3]
-    out_v[1] = out_q[0]
-    out_v[2] = out_q[1]
-    out_v[3] = out_q[2]
+    out_v = wp.vec4(out_q[3], out_q[0], out_q[1], out_q[2])
 
     out_position[b_idx] = wp.transform_get_translation(t_3)
     out_quat[b_idx] = out_v
@@ -670,7 +663,8 @@ class TransformPoint(torch.autograd.Function):
                 b,
             ],
             outputs=[wp.from_torch(out_points.view(-1, 3), dtype=wp.vec3)],
-            stream=wp.stream_from_torch(position.device),
+            stream=None if not position.is_cuda else wp.stream_from_torch(position.device),
+            device=wp.device_from_torch(position.device),
         )
 
         return out_points
@@ -695,7 +689,9 @@ class TransformPoint(torch.autograd.Function):
 
         wp_adj_position = wp.from_torch(adj_position, dtype=wp.vec3)
         wp_adj_quat = wp.from_torch(adj_quaternion, dtype=wp.vec4)
-
+        stream = None
+        if position.is_cuda:
+            stream = wp.stream_from_torch(position.device)
         wp.launch(
             kernel=compute_transform_point,
             dim=ctx.b * ctx.n,
@@ -723,8 +719,9 @@ class TransformPoint(torch.autograd.Function):
             adj_outputs=[
                 None,
             ],
-            stream=wp.stream_from_torch(grad_output.device),
             adjoint=True,
+            stream=None if not grad_output.is_cuda else wp.stream_from_torch(grad_output.device),
+            device=wp.device_from_torch(grad_output.device),
         )
         g_p = g_q = g_pt = None
         if ctx.needs_input_grad[0]:
@@ -758,19 +755,44 @@ class BatchTransformPoint(torch.autograd.Function):
         )
         ctx.b = b
         ctx.n = n
-        wp.launch(
-            kernel=compute_batch_transform_point,
-            dim=b * n,
-            inputs=[
-                wp.from_torch(position.detach().view(-1, 3).contiguous(), dtype=wp.vec3),
-                wp.from_torch(quaternion.detach().view(-1, 4).contiguous(), dtype=wp.vec4),
-                wp.from_torch(points.detach().view(-1, 3).contiguous(), dtype=wp.vec3),
-                n,
-                b,
-            ],
-            outputs=[wp.from_torch(out_points.view(-1, 3).contiguous(), dtype=wp.vec3)],
-            stream=wp.stream_from_torch(position.device),
-        )
+        if points.dtype == torch.float32:
+            wp.launch(
+                kernel=compute_batch_transform_point,
+                dim=b * n,
+                inputs=[
+                    wp.from_torch(
+                        position.detach().view(-1, 3).contiguous(),
+                        dtype=wp.types.vector(length=3, dtype=wp.float32),
+                    ),
+                    wp.from_torch(quaternion.detach().view(-1, 4).contiguous(), dtype=wp.vec4),
+                    wp.from_torch(points.detach().view(-1, 3).contiguous(), dtype=wp.vec3),
+                    n,
+                    b,
+                ],
+                outputs=[wp.from_torch(out_points.view(-1, 3).contiguous(), dtype=wp.vec3)],
+                stream=None if not position.is_cuda else wp.stream_from_torch(position.device),
+                device=wp.device_from_torch(position.device),
+            )
+        elif points.dtype == torch.float16:
+            wp.launch(
+                kernel=compute_batch_transform_point_fp16,
+                dim=b * n,
+                inputs=[
+                    wp.from_torch(
+                        position.detach().view(-1, 3).contiguous(),
+                        dtype=wp.types.vector(length=3, dtype=wp.float16),
+                    ),
+                    wp.from_torch(quaternion.detach().view(-1, 4).contiguous(), dtype=wp.vec4h),
+                    wp.from_torch(points.detach().view(-1, 3).contiguous(), dtype=wp.vec3h),
+                    n,
+                    b,
+                ],
+                outputs=[wp.from_torch(out_points.view(-1, 3).contiguous(), dtype=wp.vec3h)],
+                stream=None if not position.is_cuda else wp.stream_from_torch(position.device),
+                device=wp.device_from_torch(position.device),
+            )
+        else:
+            log_error("Unsupported dtype: " + str(points.dtype))
 
         return out_points
 
@@ -820,8 +842,9 @@ class BatchTransformPoint(torch.autograd.Function):
             adj_outputs=[
                 None,
             ],
-            stream=wp.stream_from_torch(grad_output.device),
             adjoint=True,
+            stream=None if not grad_output.is_cuda else wp.stream_from_torch(grad_output.device),
+            device=wp.device_from_torch(grad_output.device),
         )
         g_p = g_q = g_pt = None
         if ctx.needs_input_grad[0]:
@@ -850,7 +873,7 @@ class BatchTransformPose(torch.autograd.Function):
         adj_position2: torch.Tensor,
         adj_quaternion2: torch.Tensor,
     ):
-        b, _ = position.shape
+        b, _ = position.view(-1, 3).shape
 
         if out_position is None:
             out_position = torch.zeros_like(position2)
@@ -892,7 +915,8 @@ class BatchTransformPose(torch.autograd.Function):
                 wp.from_torch(out_position.detach().view(-1, 3).contiguous(), dtype=wp.vec3),
                 wp.from_torch(out_quaternion.detach().view(-1, 4).contiguous(), dtype=wp.vec4),
             ],
-            stream=wp.stream_from_torch(position.device),
+            stream=None if not position.is_cuda else wp.stream_from_torch(position.device),
+            device=wp.device_from_torch(position.device),
         )
 
         return out_position, out_quaternion
@@ -965,8 +989,13 @@ class BatchTransformPose(torch.autograd.Function):
                 None,
                 None,
             ],
-            stream=wp.stream_from_torch(grad_out_position.device),
             adjoint=True,
+            stream=(
+                None
+                if not grad_out_position.is_cuda
+                else wp.stream_from_torch(grad_out_position.device)
+            ),
+            device=wp.device_from_torch(grad_out_position.device),
         )
         g_p1 = g_q1 = g_p2 = g_q2 = None
         if ctx.needs_input_grad[0]:
@@ -977,7 +1006,7 @@ class BatchTransformPose(torch.autograd.Function):
             g_p2 = adj_position2
         if ctx.needs_input_grad[3]:
             g_q2 = adj_quaternion2
-        return g_p1, g_q1, g_p2, g_q2, None, None, None, None
+        return g_p1, g_q1, g_p2, g_q2, None, None, None, None, None, None
 
 
 class TransformPose(torch.autograd.Function):
@@ -997,7 +1026,7 @@ class TransformPose(torch.autograd.Function):
         adj_position2: torch.Tensor,
         adj_quaternion2: torch.Tensor,
     ):
-        b, _ = position2.shape
+        b, _ = position2.view(-1, 3).shape
         init_warp()
         if out_position is None:
             out_position = torch.zeros_like(position2)
@@ -1026,7 +1055,7 @@ class TransformPose(torch.autograd.Function):
         )
         ctx.b = b
         wp.launch(
-            kernel=compute_batch_pose_multipy,
+            kernel=compute_pose_multipy,
             dim=b,
             inputs=[
                 wp.from_torch(position.detach().view(-1, 3).contiguous(), dtype=wp.vec3),
@@ -1038,7 +1067,8 @@ class TransformPose(torch.autograd.Function):
                 wp.from_torch(out_position.detach().view(-1, 3).contiguous(), dtype=wp.vec3),
                 wp.from_torch(out_quaternion.detach().view(-1, 4).contiguous(), dtype=wp.vec4),
             ],
-            stream=wp.stream_from_torch(position.device),
+            stream=(None if not position.is_cuda else wp.stream_from_torch(position.device)),
+            device=wp.device_from_torch(position.device),
         )
 
         return out_position, out_quaternion
@@ -1111,7 +1141,12 @@ class TransformPose(torch.autograd.Function):
                 None,
                 None,
             ],
-            stream=wp.stream_from_torch(grad_out_position.device),
+            stream=(
+                None
+                if not grad_out_position.is_cuda
+                else wp.stream_from_torch(grad_out_position.device)
+            ),
+            device=wp.device_from_torch(grad_out_position.device),
             adjoint=True,
         )
         g_p1 = g_q1 = g_p2 = g_q2 = None
@@ -1123,7 +1158,7 @@ class TransformPose(torch.autograd.Function):
             g_p2 = adj_position2
         if ctx.needs_input_grad[3]:
             g_q2 = adj_quaternion2
-        return g_p1, g_q1, g_p2, g_q2, None, None, None, None
+        return g_p1, g_q1, g_p2, g_q2, None, None, None, None, None, None
 
 
 class PoseInverse(torch.autograd.Function):
@@ -1171,7 +1206,8 @@ class PoseInverse(torch.autograd.Function):
                 wp.from_torch(out_position.detach().view(-1, 3).contiguous(), dtype=wp.vec3),
                 wp.from_torch(out_quaternion.detach().view(-1, 4).contiguous(), dtype=wp.vec4),
             ],
-            stream=wp.stream_from_torch(position.device),
+            stream=(None if not position.is_cuda else wp.stream_from_torch(position.device)),
+            device=wp.device_from_torch(position.device),
         )
 
         return out_position, out_quaternion
@@ -1223,15 +1259,16 @@ class PoseInverse(torch.autograd.Function):
             adj_inputs=[
                 None,
                 None,
-                None,
-                None,
             ],
             adj_outputs=[
                 None,
                 None,
             ],
-            stream=wp.stream_from_torch(grad_out_position.device),
             adjoint=True,
+            stream=(
+                None if not out_position.is_cuda else wp.stream_from_torch(out_position.device)
+            ),
+            device=wp.device_from_torch(out_position.device),
         )
         g_p1 = g_q1 = None
         if ctx.needs_input_grad[0]:
@@ -1239,7 +1276,7 @@ class PoseInverse(torch.autograd.Function):
         if ctx.needs_input_grad[1]:
             g_q1 = adj_quaternion
 
-        return g_p1, g_q1, None, None
+        return g_p1, g_q1, None, None, None, None
 
 
 class QuatToMatrix(torch.autograd.Function):
@@ -1278,7 +1315,8 @@ class QuatToMatrix(torch.autograd.Function):
             outputs=[
                 wp.from_torch(out_mat.detach().view(-1, 3, 3).contiguous(), dtype=wp.mat33),
             ],
-            stream=wp.stream_from_torch(quaternion.device),
+            stream=(None if not quaternion.is_cuda else wp.stream_from_torch(quaternion.device)),
+            device=wp.device_from_torch(quaternion.device),
         )
 
         return out_mat
@@ -1317,8 +1355,11 @@ class QuatToMatrix(torch.autograd.Function):
             adj_outputs=[
                 None,
             ],
-            stream=wp.stream_from_torch(grad_out_mat.device),
             adjoint=True,
+            stream=(
+                None if not grad_out_mat.is_cuda else wp.stream_from_torch(grad_out_mat.device)
+            ),
+            device=wp.device_from_torch(grad_out_mat.device),
         )
         g_q1 = None
         if ctx.needs_input_grad[0]:
@@ -1363,7 +1404,8 @@ class MatrixToQuaternion(torch.autograd.Function):
             outputs=[
                 wp.from_torch(out_quaternion.detach().view(-1, 4).contiguous(), dtype=wp.vec4),
             ],
-            stream=wp.stream_from_torch(in_mat.device),
+            stream=(None if not in_mat.is_cuda else wp.stream_from_torch(in_mat.device)),
+            device=wp.device_from_torch(in_mat.device),
         )
 
         return out_quaternion
@@ -1400,8 +1442,9 @@ class MatrixToQuaternion(torch.autograd.Function):
             adj_outputs=[
                 None,
             ],
-            stream=wp.stream_from_torch(grad_out_q.device),
             adjoint=True,
+            stream=(None if not in_mat.is_cuda else wp.stream_from_torch(in_mat.device)),
+            device=wp.device_from_torch(in_mat.device),
         )
         g_q1 = None
         if ctx.needs_input_grad[0]:
