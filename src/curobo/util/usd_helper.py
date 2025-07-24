@@ -780,9 +780,9 @@ class UsdHelper:
         obj_prim: Usd.Prim,
         material: Material = Material(),
     ):
-        mat_path = join_path(object_path, material_name)
+        mat_path = join_tree(object_path, material_name)
         material_usd = UsdShade.Material.Define(self.stage, mat_path)
-        pbrShader = UsdShade.Shader.Define(self.stage, join_path(mat_path, "PbrShader"))
+        pbrShader = UsdShade.Shader.Define(self.stage, join_tree(mat_path, "PbrShader"))
         pbrShader.CreateIdAttr("UsdPreviewSurface")
         pbrShader.CreateInput("roughness", Sdf.ValueTypeNames.Float).Set(material.roughness)
         pbrShader.CreateInput("metallic", Sdf.ValueTypeNames.Float).Set(material.metallic)
