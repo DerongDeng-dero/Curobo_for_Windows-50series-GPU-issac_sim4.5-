@@ -21,8 +21,14 @@ The key script is:
 Its role is very explicit:
 
 - load your own USD environment
-- inject the robot at runtime
+- reuse a robot articulation that already exists in the stage, or inject one at runtime when needed
 - attach the pick/place state machine to that environment
+
+The default recommended path is now:
+
+- keep your own authored USD environment
+- prefer reusing the robot articulation that is already in that USD stage
+- let the script create runtime helpers only when task markers or pick objects are missing
 
 ## 2. What you get from this template
 
@@ -32,7 +38,7 @@ After running it, you can:
 2. open your own USD scene
 3. run the script from Script Editor
 4. let the script extract obstacles from the configured scene roots
-5. add the robot into that scene
+5. reuse the robot already in the scene, or import one when needed
 6. use your existing pick object / pick target / place target, or let the script create runtime markers
 7. execute a full pick/place flow
 
@@ -72,11 +78,12 @@ This is useful when:
 
 This template is not trying to magically infer arbitrary scene semantics.
 
-You still need to define three things clearly:
+You still need to define four things clearly:
 
 1. which prim roots contain static obstacles
-2. which prim is the pick object
-3. which prims are the pick target and place target
+2. which prim is the robot articulation root
+3. which prim is the pick object
+4. which prims are the pick target and place target
 
 If your scene does not already contain task markers, the script can fill the gaps:
 
@@ -95,6 +102,7 @@ The most convenient first structure is:
 
 ```text
 /World
+  /Franka
   /scene
     /table
     /wall
@@ -109,6 +117,7 @@ The most convenient first structure is:
 
 Why this is useful:
 
+- `/World/Franka` or another robot root gives the script a stable articulation path to reuse
 - `/World/scene` clearly contains static obstacles
 - `/World/task` clearly contains task objects and targets
 - `SCENE_COLLISION_ROOTS = ["/World/scene"]` becomes simple and stable
@@ -145,14 +154,16 @@ If you use Mode A:
 You need to identify:
 
 1. the static environment root path
-2. the pick object path
-3. the pick target path
-4. the place target path
+2. the robot articulation root path
+3. the pick object path
+4. the pick target path
+5. the place target path
 
 Example:
 
 ```text
 /World/scene
+/World/Franka
 /World/task/pick_cube
 /World/task/pick_target
 /World/task/place_target
@@ -182,6 +193,9 @@ Most important settings:
 
 - `OPEN_USD_STAGE_ON_RUN`
 - `USD_STAGE_PATH`
+- `ROBOT_SCENE_MODE`
+- `EXISTING_ROBOT_PRIM_PATH`
+- `RESET_EXISTING_ROBOT_TO_RETRACT`
 - `SCENE_COLLISION_ROOTS`
 - `PICK_OBJECT_PRIM_PATH`
 - `PICK_TARGET_PRIM_PATH`
@@ -189,6 +203,27 @@ Most important settings:
 - `ROBOT_CFG_NAME`
 - `ROBOT_BASE_POSITION`
 - `STATE_MACHINE_CONFIG`
+
+Recommended beginner robot settings when your USD already contains the robot:
+
+```python
+ROBOT_SCENE_MODE = "reuse_existing"
+EXISTING_ROBOT_PRIM_PATH = "/World/Franka"
+RESET_EXISTING_ROBOT_TO_RETRACT = True
+```
+
+Use `ROBOT_SCENE_MODE = "import_robot"` only when your authored USD scene does not contain the robot yet.
+
+For task orientation, keep this by default:
+
+```python
+STATE_MACHINE_CONFIG = {
+    "task_orientation": [0.0, 0.0, -1.0, 0.0],
+    "task_orientation_frame": "world",
+}
+```
+
+That lets the script convert world-frame targets into the robot base frame automatically.
 
 ### 6.7 Step 7: run the script
 
@@ -282,6 +317,46 @@ Why:
 
 If your scene is extremely box-like and simple, `PRIMITIVE` may also work.
 
+### 7.6 `ROBOT_SCENE_MODE`, `EXISTING_ROBOT_PRIM_PATH`, and `RESET_EXISTING_ROBOT_TO_RETRACT`
+
+This is one of the most important additions in the upgraded template.
+
+If your USD scene already contains the robot, the recommended setting is:
+
+```python
+ROBOT_SCENE_MODE = "reuse_existing"
+EXISTING_ROBOT_PRIM_PATH = "/World/Franka"
+RESET_EXISTING_ROBOT_TO_RETRACT = True
+```
+
+This means:
+
+- do not import a second robot
+- directly attach to the articulation under `/World/Franka`
+- reset the robot to a clean retract pose before starting the task flow
+
+If your USD scene does not contain the robot yet, you can still use:
+
+```python
+ROBOT_SCENE_MODE = "import_robot"
+ROBOT_BASE_POSITION = [0.0, 0.0, 0.0]
+```
+
+### 7.7 `STATE_MACHINE_CONFIG["task_orientation_frame"]`
+
+Recommended default:
+
+```python
+"task_orientation_frame": "world"
+```
+
+That means:
+
+- you define the task orientation in world coordinates
+- the script converts it into the robot base frame before planning
+
+This matters when your robot is already positioned inside your authored workcell and is not sitting at the world origin.
+
 ## 8. Scene modeling guidance for cuRobo-friendly USD scenes
 
 ### 8.1 Separate environment and task objects
@@ -339,12 +414,36 @@ Do not bury the place target too deep into corners or clutter.
 
 If the robot cannot approach or retreat cleanly, the scene is badly posed even if the script is correct.
 
-### 8.6 Stabilize the robot base position first
+### 8.6 Stabilize the robot base setup first
 
-Because the robot is injected at runtime, you must ensure:
+If you use:
 
-- `ROBOT_BASE_POSITION` is reasonable
-- the robot does not spawn in collision with the table or environment
+- `ROBOT_SCENE_MODE = "reuse_existing"`
+
+then first confirm:
+
+- the robot root path is correct
+- the robot base is placed correctly in the USD scene
+- the initial pose is not already intersecting the table or the workcell
+
+If you use:
+
+- `ROBOT_SCENE_MODE = "import_robot"`
+
+then first tune:
+
+- `ROBOT_BASE_POSITION`
+
+### 8.7 Keep the reused robot base upright in the first version
+
+The upgraded template now converts world-frame target positions and orientations into the robot base frame.
+
+That makes these cases much more stable than before:
+
+- translated robot bases
+- common planar yaw rotations of the robot base
+
+For the first working version, I still recommend keeping the base upright and close to a typical tabletop setup. That keeps scene debugging much simpler.
 
 ## 9. Typical usage examples
 
@@ -354,6 +453,8 @@ Then you often only need:
 
 ```python
 OPEN_USD_STAGE_ON_RUN = False
+ROBOT_SCENE_MODE = "reuse_existing"
+EXISTING_ROBOT_PRIM_PATH = "/World/Franka"
 SCENE_COLLISION_ROOTS = ["/World/scene"]
 PICK_OBJECT_PRIM_PATH = "/World/task/pick_cube"
 PICK_TARGET_PRIM_PATH = "/World/task/pick_target"
@@ -367,7 +468,23 @@ Then keep the target prim settings but let the script create runtime markers, an
 - `RUNTIME_PICK_MARKER_CFG`
 - `RUNTIME_PLACE_MARKER_CFG`
 
-### 9.3 Your scene tree is messy and you can only start from `/World`
+### 9.3 Your scene already has a robot, but you do not want to reset it to retract
+
+Use:
+
+```python
+ROBOT_SCENE_MODE = "reuse_existing"
+EXISTING_ROBOT_PRIM_PATH = "/World/Franka"
+RESET_EXISTING_ROBOT_TO_RETRACT = False
+```
+
+This is useful when:
+
+- you want to preserve the current GUI pose
+- you are doing in-app interactive debugging
+- you want to test planning directly from the current joint state
+
+### 9.4 Your scene tree is messy and you can only start from `/World`
 
 You can temporarily use:
 
@@ -393,7 +510,9 @@ Usually:
 
 Check:
 
-- `ROBOT_BASE_POSITION`
+- `EXISTING_ROBOT_PRIM_PATH`
+- whether you are using `reuse_existing` or `import_robot`
+- if you are importing the robot, then check `ROBOT_BASE_POSITION`
 - table height
 - initial retract pose clearance
 
@@ -411,6 +530,14 @@ Check:
 - `ROBOT_CFG_NAME`
 - `STATE_MACHINE_CONFIG["gripper_joint_names"]`
 - open and closed gripper positions
+
+### The robot is not at the world origin, but the target orientation still feels wrong
+
+Check:
+
+- `STATE_MACHINE_CONFIG["task_orientation_frame"]` is still `"world"` unless you intentionally define orientations in the robot frame
+- `EXISTING_ROBOT_PRIM_PATH` points to the robot root, not to a random mesh prim
+- the robot base orientation is still a normal upright workcell layout
 
 ## 11. Recommended next step
 

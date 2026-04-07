@@ -8,11 +8,36 @@ disclosure or distribution of this material and related documentation
 without an express license agreement from NVIDIA CORPORATION or
 its affiliates is strictly prohibited.
 -->
-# cuRobo
+# cuRobo for Windows + Isaac Sim 4.5
 
-*CUDA Accelerated Robot Library*
+*CUDA Accelerated Robot Library with a Windows-focused Isaac Sim workflow*
 
-[for windows OS](workspace_win/readme.md)
+This repository keeps the upstream cuRobo codebase while adding a practical
+Windows + Isaac Sim 4.5 path for:
+
+- installation on recent NVIDIA RTX Windows machines
+- standalone Isaac Sim motion-generation entry points
+- in-app Script Editor workflows inside Isaac Sim Full
+- pick/place state-machine templates
+- loading your own USD scene, including reusing an existing robot articulation
+- bilingual Chinese / English documentation for setup, usage, and maintenance
+
+[Legacy workspace note for Windows](workspace_win/readme.md)
+
+## What This Fork Adds
+
+- Windows installation helpers: `install_in_isaacsim.bat`, `verify_isaacsim_integration.bat`
+- Standalone launchers: `isaacsim_python.bat`, `run_isaacsim_curobo_demo.bat`
+- Shared planning compatibility layer for Isaac Sim examples under `examples/isaac_sim`
+- GUI in-app templates for beginner motion generation, custom scenes, pick/place, and USD scene reuse
+- Full bilingual docs under `docs/zh-cn_version` and `docs/en_version`
+
+## Recommended Starting Points
+
+- If you need installation from scratch on Windows: start with the tutorial docs below
+- If you already have Isaac Sim running and want an in-app workflow: start with the Selector / in-app beginner guide
+- If you want to reuse your own USD scene: go directly to the USD scene pick/place workflow guide
+- If you want the main standalone scene demo: run `examples/isaac_sim/simple_stacking.py`
 
 ## Documentation
 
@@ -24,7 +49,7 @@ Chinese:
 - [Selector + in-app cuRobo beginner guide](docs/zh-cn_version/ISAACSIM_SELECTOR_IN_APP_CUROBO_BEGINNER_GUIDE.zh-CN.md)
 - [Custom scene workflow beginner guide](docs/zh-cn_version/ISAACSIM_CUSTOM_SCENE_WORKFLOW_BEGINNER_GUIDE.zh-CN.md)
 - [Pick-place state machine and scene modeling guide](docs/zh-cn_version/ISAACSIM_PICK_PLACE_STATE_MACHINE_AND_SCENE_MODELING_GUIDE.zh-CN.md)
-- [Load your own USD scene and attach pick-place state machine guide](docs/zh-cn_version/ISAACSIM_USD_SCENE_PICK_PLACE_WORKFLOW_GUIDE.zh-CN.md)
+- [Load your own USD scene, reuse an existing articulation, and attach the pick-place state machine guide](docs/zh-cn_version/ISAACSIM_USD_SCENE_PICK_PLACE_WORKFLOW_GUIDE.zh-CN.md)
 - [Full repair log and maintenance guide](docs/zh-cn_version/curobo_isaacsim_windows_full_fix_guide.zh-CN.md)
 
 English:
@@ -35,7 +60,7 @@ English:
 - [Selector + in-app cuRobo beginner guide](docs/en_version/ISAACSIM_SELECTOR_IN_APP_CUROBO_BEGINNER_GUIDE.en.md)
 - [Custom scene workflow beginner guide](docs/en_version/ISAACSIM_CUSTOM_SCENE_WORKFLOW_BEGINNER_GUIDE.en.md)
 - [Pick-place state machine and scene modeling guide](docs/en_version/ISAACSIM_PICK_PLACE_STATE_MACHINE_AND_SCENE_MODELING_GUIDE.en.md)
-- [Load your own USD scene and attach pick-place state machine guide](docs/en_version/ISAACSIM_USD_SCENE_PICK_PLACE_WORKFLOW_GUIDE.en.md)
+- [Load your own USD scene, reuse an existing articulation, and attach the pick-place state machine guide](docs/en_version/ISAACSIM_USD_SCENE_PICK_PLACE_WORKFLOW_GUIDE.en.md)
 - [Full repair log and maintenance guide](docs/en_version/curobo_isaacsim_windows_full_fix_guide.en.md)
 
 ## Windows / Isaac Sim Quick Start

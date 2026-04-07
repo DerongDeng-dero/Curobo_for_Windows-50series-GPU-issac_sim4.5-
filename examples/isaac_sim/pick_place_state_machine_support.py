@@ -33,6 +33,7 @@ DEFAULT_STATE_MACHINE_CONFIG = {
     "gripper_open_position": 0.04,
     "gripper_closed_position": 0.0,
     "task_orientation": [0.0, 0.0, -1.0, 0.0],
+    "task_orientation_frame": "world",
     "pregrasp_height": 0.16,
     "grasp_height": 0.085,
     "lift_height": 0.24,
@@ -48,6 +49,63 @@ DEFAULT_STATE_MACHINE_CONFIG = {
     "plan_fallback_enable_graph": True,
     "place_release_height_offset": 0.03,
 }
+
+
+def _normalize_quaternion(quaternion: np.ndarray) -> np.ndarray:
+    quat = np.asarray(quaternion, dtype=np.float32)
+    quat_norm = np.linalg.norm(quat)
+    if quat_norm <= 0.0:
+        raise ValueError("Quaternion norm is zero")
+    return quat / quat_norm
+
+
+def _quaternion_conjugate(quaternion: np.ndarray) -> np.ndarray:
+    quat = _normalize_quaternion(quaternion)
+    return np.asarray([quat[0], -quat[1], -quat[2], -quat[3]], dtype=np.float32)
+
+
+def _quaternion_multiply(lhs: np.ndarray, rhs: np.ndarray) -> np.ndarray:
+    lhs = np.asarray(lhs, dtype=np.float32)
+    rhs = np.asarray(rhs, dtype=np.float32)
+    return np.asarray(
+        [
+            lhs[0] * rhs[0] - lhs[1] * rhs[1] - lhs[2] * rhs[2] - lhs[3] * rhs[3],
+            lhs[0] * rhs[1] + lhs[1] * rhs[0] + lhs[2] * rhs[3] - lhs[3] * rhs[2],
+            lhs[0] * rhs[2] - lhs[1] * rhs[3] + lhs[2] * rhs[0] + lhs[3] * rhs[1],
+            lhs[0] * rhs[3] + lhs[1] * rhs[2] - lhs[2] * rhs[1] + lhs[3] * rhs[0],
+        ],
+        dtype=np.float32,
+    )
+
+
+def _rotate_vector_by_quaternion(vector: np.ndarray, quaternion: np.ndarray) -> np.ndarray:
+    quat = _normalize_quaternion(quaternion)
+    vec_quat = np.asarray([0.0, vector[0], vector[1], vector[2]], dtype=np.float32)
+    rotated = _quaternion_multiply(_quaternion_multiply(quat, vec_quat), _quaternion_conjugate(quat))
+    return rotated[1:]
+
+
+def world_position_to_local_frame(
+    world_position: np.ndarray,
+    frame_position: np.ndarray,
+    frame_orientation: np.ndarray,
+) -> np.ndarray:
+    relative_position = np.asarray(world_position, dtype=np.float32) - np.asarray(
+        frame_position,
+        dtype=np.float32,
+    )
+    return _rotate_vector_by_quaternion(relative_position, _quaternion_conjugate(frame_orientation))
+
+
+def world_orientation_to_local_frame(
+    world_orientation: np.ndarray,
+    frame_orientation: np.ndarray,
+) -> np.ndarray:
+    local_orientation = _quaternion_multiply(
+        _quaternion_conjugate(frame_orientation),
+        _normalize_quaternion(world_orientation),
+    )
+    return _normalize_quaternion(local_orientation)
 
 
 async def next_frame(count: int = 1) -> None:
@@ -114,6 +172,7 @@ class PickPlaceTeachingStateMachine:
         self.pick_object = pick_object
         self.pick_marker = pick_marker
         self.place_marker = place_marker
+        self.robot_root_prim = SingleXFormPrim(robot_prim_path)
         self.ee_prim = SingleXFormPrim(f"{robot_prim_path}/{robot_cfg['kinematics']['ee_link']}")
         self.tensor_args = motion_gen.tensor_args
         self.cfg = build_state_machine_config(state_config)
@@ -137,6 +196,19 @@ class PickPlaceTeachingStateMachine:
         self.object_attached = False
         self.object_in_collision_model = False
         self.state = "OPEN_GRIPPER"
+
+        base_position, base_orientation = self.robot_root_prim.get_world_pose()
+        print(
+            "STATE_MACHINE: robot base world pose "
+            f"position={np.asarray(base_position, dtype=np.float32).tolist()} "
+            f"orientation={np.asarray(base_orientation, dtype=np.float32).tolist()}",
+            flush=True,
+        )
+        print(
+            "STATE_MACHINE: task_orientation_frame="
+            f"{self.cfg.get('task_orientation_frame', 'world')}",
+            flush=True,
+        )
 
     async def run(self) -> None:
         print("STATE_MACHINE: starting pick/place teaching flow", flush=True)
@@ -210,13 +282,47 @@ class PickPlaceTeachingStateMachine:
 
         return "FAILED"
 
+    def _goal_position_from_marker(self, marker, offset_z: float) -> np.ndarray:
+        marker_position, _ = marker.get_world_pose()
+        world_goal_position = np.asarray(
+            [
+                marker_position[0],
+                marker_position[1],
+                marker_position[2] + offset_z,
+            ],
+            dtype=np.float32,
+        )
+        return self._world_position_to_robot_frame(world_goal_position)
+
     def _pick_pose(self, offset_z: float) -> np.ndarray:
-        pick_position, _ = self.pick_marker.get_world_pose()
-        return np.asarray([pick_position[0], pick_position[1], pick_position[2] + offset_z], dtype=np.float32)
+        return self._goal_position_from_marker(self.pick_marker, offset_z)
 
     def _place_pose(self, offset_z: float) -> np.ndarray:
-        place_position, _ = self.place_marker.get_world_pose()
-        return np.asarray([place_position[0], place_position[1], place_position[2] + offset_z], dtype=np.float32)
+        return self._goal_position_from_marker(self.place_marker, offset_z)
+
+    def _world_position_to_robot_frame(self, world_position: np.ndarray) -> np.ndarray:
+        base_position, base_orientation = self.robot_root_prim.get_world_pose()
+        return world_position_to_local_frame(
+            np.asarray(world_position, dtype=np.float32),
+            np.asarray(base_position, dtype=np.float32),
+            np.asarray(base_orientation, dtype=np.float32),
+        )
+
+    def _task_orientation_in_robot_frame(self) -> np.ndarray:
+        task_orientation = np.asarray(self.cfg["task_orientation"], dtype=np.float32)
+        frame_name = str(self.cfg.get("task_orientation_frame", "world")).lower()
+        if frame_name == "robot":
+            return _normalize_quaternion(task_orientation)
+        if frame_name == "world":
+            _, base_orientation = self.robot_root_prim.get_world_pose()
+            return world_orientation_to_local_frame(
+                task_orientation,
+                np.asarray(base_orientation, dtype=np.float32),
+            )
+        raise ValueError(
+            "Unsupported task_orientation_frame. "
+            f"Expected 'world' or 'robot', got {self.cfg.get('task_orientation_frame')}"
+        )
 
     def _sim_joint_state_to_curobo(self) -> JointState:
         sim_js = self.robot.get_joints_state()
@@ -248,7 +354,7 @@ class PickPlaceTeachingStateMachine:
         active_js = full_js.get_ordered_joint_state(self.motion_gen.kinematics.joint_names)
         goal_pose = Pose(
             position=self.tensor_args.to_device([goal_position.tolist()]),
-            quaternion=self.tensor_args.to_device([self.cfg["task_orientation"]]),
+            quaternion=self.tensor_args.to_device([self._task_orientation_in_robot_frame().tolist()]),
         )
         primary_plan_config = MotionGenPlanConfig(
             enable_graph=False,

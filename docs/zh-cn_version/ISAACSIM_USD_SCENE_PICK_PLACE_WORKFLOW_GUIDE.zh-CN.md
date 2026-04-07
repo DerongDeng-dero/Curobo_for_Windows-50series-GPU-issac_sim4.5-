@@ -22,15 +22,20 @@
 它的定位非常明确：
 
 - 先加载你自己的环境 USD 场景
-- 再往这个场景里放入机器人
+- 再复用场景里已有机器人 articulation，或者按需运行时注入机器人
 - 再把 pick-place 状态机接上去
 
 这份脚本目前的默认路线是：
 
 - **复用你自己的环境场景**
-- **运行时注入机器人和任务辅助物体**
+- **优先复用你自己的机器人 articulation**
+- **缺失任务辅助物体时，再由脚本补 runtime helper**
 
-这比一开始就要求你“自己 USD 里必须已经有完全匹配的机器人 articulation、抓取点、放置点、状态机对象”更稳，也更适合小白。
+这样做的好处是：
+
+- 如果你的工位 USD 里已经有机器人，就不用重复导入第二台机器人
+- 如果你的场景还没整理好，也还能退回到运行时注入模式
+- 对初学者和长期维护两种工作流都兼容
 
 ---
 
@@ -42,7 +47,7 @@
 2. 打开你自己的 USD 场景
 3. 在 `Script Editor` 里运行这个脚本
 4. 让脚本读取你指定的场景障碍物 root
-5. 在场景里加入机器人
+5. 复用场景里已有机器人 articulation，或者按需导入机器人
 6. 使用你已有的拾取物体 / 拾取点 / 放置点，或者让脚本自动补 runtime marker
 7. 让机器人执行：
    - 打开夹爪
@@ -104,11 +109,12 @@ USD_STAGE_PATH = r"D:\isaac-sim\your_scenes\pick_place_workcell.usd"
 
 这份模板不是“万能自动识别任意场景语义”的系统。
 
-它要求你至少明确 3 类东西：
+它要求你至少明确 4 类东西：
 
 1. 哪些 prim 属于静态障碍物
-2. 哪个 prim 是要抓的物体
-3. 哪个 prim 是拾取目标点，哪个 prim 是放置目标点
+2. 哪个 prim 是机器人 articulation root
+3. 哪个 prim 是要抓的物体
+4. 哪个 prim 是拾取目标点，哪个 prim 是放置目标点
 
 如果你没有现成的拾取 / 放置 marker，也没关系。
 
@@ -136,6 +142,7 @@ USD_STAGE_PATH = r"D:\isaac-sim\your_scenes\pick_place_workcell.usd"
 
 ```text
 /World
+  /Franka
   /scene
     /table
     /wall
@@ -150,6 +157,7 @@ USD_STAGE_PATH = r"D:\isaac-sim\your_scenes\pick_place_workcell.usd"
 
 这个结构的优点非常大：
 
+- `/World/Franka` 或别的机器人 root 可以稳定给脚本复用
 - `/World/scene` 专门放静态障碍物
 - `/World/task` 专门放任务物体和任务目标点
 - 脚本里 `SCENE_COLLISION_ROOTS = ["/World/scene"]` 可以直接工作
@@ -209,14 +217,16 @@ D:\isaac-sim\isaac-sim.selector.bat
 重点记下面几类路径：
 
 1. 环境障碍物 root 路径
-2. 要抓取的物体 prim 路径
-3. 拾取目标点 prim 路径
-4. 放置目标点 prim 路径
+2. 机器人 articulation root 路径
+3. 要抓取的物体 prim 路径
+4. 拾取目标点 prim 路径
+5. 放置目标点 prim 路径
 
 例如你可能看到：
 
 ```text
 /World/scene
+/World/Franka
 /World/task/pick_cube
 /World/task/pick_target
 /World/task/place_target
@@ -324,10 +334,27 @@ PLACE_TARGET_PRIM_PATH = "/World/task/place_target"
 
 ```python
 ROBOT_CFG_NAME = "franka.yml"
+ROBOT_SCENE_MODE = "reuse_existing"
+EXISTING_ROBOT_PRIM_PATH = "/World/Franka"
+RESET_EXISTING_ROBOT_TO_RETRACT = True
 ROBOT_BASE_POSITION = [0.0, 0.0, 0.0]
 ```
 
 如果你换机器人，这里和夹爪 joint 名也要一起改。
+
+更具体地说：
+
+- 如果你的 USD 里已经有机器人，优先用 `reuse_existing`
+- 如果你的 USD 里还没有机器人，才用 `import_robot`
+- `ROBOT_BASE_POSITION` 只在 `import_robot` 模式下生效
+
+最推荐的小白第一版配置通常是：
+
+```python
+ROBOT_SCENE_MODE = "reuse_existing"
+EXISTING_ROBOT_PRIM_PATH = "/World/Franka"
+RESET_EXISTING_ROBOT_TO_RETRACT = True
+```
 
 ### 状态机高度参数
 
@@ -343,6 +370,21 @@ STATE_MACHINE_CONFIG = {
 ```
 
 如果你的桌面更高、物体更大、目标更深，这几项就要调。
+
+### 目标姿态坐标系
+
+```python
+STATE_MACHINE_CONFIG = {
+    "task_orientation": [0.0, 0.0, -1.0, 0.0],
+    "task_orientation_frame": "world",
+}
+```
+
+默认推荐保持：
+
+- `task_orientation_frame = "world"`
+
+这样即使你的机器人底座已经摆在自己的工位里，不在世界原点，脚本也会先把目标姿态转到 robot base frame 再规划。
 
 ---
 
@@ -510,6 +552,58 @@ COLLISION_CHECKER = "PRIMITIVE"
 
 ---
 
+## 7.6 `ROBOT_SCENE_MODE`、`EXISTING_ROBOT_PRIM_PATH`、`RESET_EXISTING_ROBOT_TO_RETRACT`
+
+这是这次升级后最重要的新配置之一。
+
+如果你的 USD 里已经有机器人，推荐：
+
+```python
+ROBOT_SCENE_MODE = "reuse_existing"
+EXISTING_ROBOT_PRIM_PATH = "/World/Franka"
+RESET_EXISTING_ROBOT_TO_RETRACT = True
+```
+
+这表示：
+
+- 不再额外导入第二台机器人
+- 直接接管 `/World/Franka` 这棵 articulation
+- 运行脚本后先把机器人拉回 retract 姿态，便于稳定起步
+
+如果你暂时还没有把机器人做进 USD，也可以退回老模式：
+
+```python
+ROBOT_SCENE_MODE = "import_robot"
+ROBOT_BASE_POSITION = [0.0, 0.0, 0.0]
+```
+
+这时脚本会像之前一样运行时导入机器人。
+
+---
+
+## 7.7 `STATE_MACHINE_CONFIG["task_orientation_frame"]`
+
+默认推荐：
+
+```python
+"task_orientation_frame": "world"
+```
+
+这表示：
+
+- 你在脚本里写的末端目标姿态是按世界坐标系理解的
+- 脚本会自动把它转换到 robot base frame
+
+这对“机器人底座已经放在你自己的工位里，而且不在原点”的场景尤其重要。
+
+如果你已经完全按机器人基座坐标系来思考，也可以改成：
+
+```python
+"task_orientation_frame": "robot"
+```
+
+---
+
 ## 8. 如何在 Isaac Sim 里建一个更适合 cuRobo 的 USD 场景
 
 这部分很重要。
@@ -630,20 +724,55 @@ COLLISION_CHECKER = "PRIMITIVE"
 
 ---
 
-## 8.6 机器人底座位置要先稳定
+## 8.6 先稳定机器人基座，再谈任务点
 
-这份模板里机器人还是运行时注入的。
+如果你用的是：
 
-所以你至少要保证：
+- `ROBOT_SCENE_MODE = "reuse_existing"`
 
-- `ROBOT_BASE_POSITION` 是合理的
-- 机器人一出生不要就和桌子、墙或设备重叠
+那你最该先确认的是：
+
+- 场景里机器人 root 路径是否正确
+- 机器人基座在 USD 里是否已经摆在合理位置
+- 机器人初始姿态是否一开始就穿进桌面或设备
+
+如果你用的是：
+
+- `ROBOT_SCENE_MODE = "import_robot"`
+
+那你最该先调的是：
+
+- `ROBOT_BASE_POSITION`
 
 一个很实用的工作流是：
 
-1. 先只调机器人底座位置
-2. 再看其 retract 姿态是否干净
-3. 然后再开始调 pick/place
+1. 先只确认机器人基座和 retract 姿态干净
+2. 再确认 pick/place marker 在 reachable workspace 里
+3. 最后再调 `pregrasp_height`、`place_height` 这些任务参数
+
+---
+
+## 8.7 复用已有机器人时，尽量保持基座“直立”
+
+这版模板已经会把目标点和末端姿态从 world frame 转到 robot base frame。
+
+所以：
+
+- 机器人基座有平移
+- 机器人基座有常见的平面内旋转
+
+这两类情况现在都比之前更稳。
+
+但对于小白，我仍然建议第一版尽量保持：
+
+- 机器人底座 roll / pitch 不要太复杂
+- 先做典型桌面工位
+
+原因不是脚本完全不能处理，而是：
+
+- 工位越倾斜
+- 任务点越复杂
+- 你越难区分是场景问题、姿态定义问题，还是规划参数问题
 
 ---
 
@@ -664,6 +793,8 @@ COLLISION_CHECKER = "PRIMITIVE"
 
 ```python
 OPEN_USD_STAGE_ON_RUN = False
+ROBOT_SCENE_MODE = "reuse_existing"
+EXISTING_ROBOT_PRIM_PATH = "/World/Franka"
 SCENE_COLLISION_ROOTS = ["/World/scene"]
 PICK_OBJECT_PRIM_PATH = "/World/task/pick_cube"
 PICK_TARGET_PRIM_PATH = "/World/task/pick_target"
@@ -694,7 +825,29 @@ PLACE_TARGET_PRIM_PATH = "/World/task/place_target"
 
 ---
 
-## 9.3 你的场景树比较乱，只能先从 `/World` 读
+## 9.3 你的场景里已经有机器人，但你不想重置到 retract
+
+那你可以这样：
+
+```python
+ROBOT_SCENE_MODE = "reuse_existing"
+EXISTING_ROBOT_PRIM_PATH = "/World/Franka"
+RESET_EXISTING_ROBOT_TO_RETRACT = False
+```
+
+这适合：
+
+- 你想保留场景里机器人当前姿态
+- 你正在做 GUI 内交互调试
+- 你先想观察当前关节状态下能不能直接规划
+
+但我仍然建议第一轮排错先用：
+
+- `RESET_EXISTING_ROBOT_TO_RETRACT = True`
+
+---
+
+## 9.4 你的场景树比较乱，只能先从 `/World` 读
 
 这种情况下可以临时这么做：
 
@@ -731,7 +884,9 @@ EXTRA_WORLD_IGNORE_PATHS = [
 
 先看：
 
-- `ROBOT_BASE_POSITION`
+- `EXISTING_ROBOT_PRIM_PATH` 对不对
+- 你当前到底在用 `reuse_existing` 还是 `import_robot`
+- 如果是 `import_robot`，再看 `ROBOT_BASE_POSITION`
 
 然后看：
 
@@ -772,6 +927,24 @@ EXTRA_WORLD_IGNORE_PATHS = [
 
 - 给任务物体建立一个上层 Xform root
 - 把 `PICK_OBJECT_PRIM_PATH` 指到这个 root
+
+---
+
+## 10.6 机器人明明不在原点，但目标姿态还是别扭
+
+先检查：
+
+- `STATE_MACHINE_CONFIG["task_orientation_frame"]` 是否还在默认的 `"world"`
+- 你的机器人底座是否是常见的桌面工位摆放
+- `EXISTING_ROBOT_PRIM_PATH` 是否真的指向机器人 root，而不是随便某个 mesh 节点
+
+如果你已经明确按机器人基座坐标系定义姿态了，再考虑把：
+
+- `task_orientation_frame`
+
+改成：
+
+- `"robot"`
 
 ---
 

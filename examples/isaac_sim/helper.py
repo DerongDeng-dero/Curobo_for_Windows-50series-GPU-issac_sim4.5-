@@ -178,6 +178,79 @@ def add_robot_to_scene(
     return robot, robot_path
 
 
+def _find_descendant_prim_by_name(root_prim, target_name: str):
+    if not root_prim.IsValid():
+        return None
+    if root_prim.GetName() == target_name:
+        return root_prim
+
+    prim_queue = list(root_prim.GetChildren())
+    while prim_queue:
+        prim = prim_queue.pop(0)
+        if prim.GetName() == target_name:
+            return prim
+        prim_queue.extend(list(prim.GetChildren()))
+    return None
+
+
+def resolve_existing_robot_paths(robot_config: Dict, stage, robot_prim_path: str):
+    base_link_name = robot_config["kinematics"]["base_link"]
+    root_prim = stage.GetPrimAtPath(robot_prim_path)
+    if not root_prim.IsValid():
+        raise RuntimeError(
+            f"Existing robot prim path does not exist in the stage: {robot_prim_path}"
+        )
+
+    direct_base_link_path = robot_prim_path.rstrip("/") + "/" + base_link_name
+    direct_base_link_prim = stage.GetPrimAtPath(direct_base_link_path)
+    if direct_base_link_prim.IsValid():
+        return robot_prim_path, direct_base_link_path
+
+    if root_prim.GetName() == base_link_name:
+        parent_prim = root_prim.GetParent()
+        resolved_root_path = robot_prim_path
+        if parent_prim.IsValid():
+            resolved_root_path = parent_prim.GetPath().pathString
+        return resolved_root_path, robot_prim_path
+
+    descendant_base_link_prim = _find_descendant_prim_by_name(root_prim, base_link_name)
+    if descendant_base_link_prim is not None and descendant_base_link_prim.IsValid():
+        return robot_prim_path, descendant_base_link_prim.GetPath().pathString
+
+    raise RuntimeError(
+        "Could not find the robot base link under the configured prim path. "
+        f"robot_prim_path={robot_prim_path}, expected_base_link={base_link_name}"
+    )
+
+
+def attach_existing_robot_to_scene(
+    robot_config: Dict,
+    my_world: World,
+    robot_prim_path: str,
+    robot_name: str = "robot",
+    initialize_world: bool = True,
+):
+    stage = my_world.scene.stage
+    resolved_robot_prim_path, base_link_prim_path = resolve_existing_robot_paths(
+        robot_config,
+        stage,
+        robot_prim_path,
+    )
+
+    robot_p = Robot(
+        prim_path=base_link_prim_path,
+        name=robot_name,
+    )
+    robot = my_world.scene.add(robot_p)
+
+    if initialize_world:
+        if ISAAC_SIM_45:
+            my_world.initialize_physics()
+        robot.initialize()
+
+    return robot, resolved_robot_prim_path
+
+
 class VoxelManager:
     def __init__(
         self,

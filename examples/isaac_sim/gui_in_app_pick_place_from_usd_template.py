@@ -25,7 +25,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 if SCRIPT_DIR not in sys.path:
     sys.path.insert(0, SCRIPT_DIR)
 
-from helper import add_robot_to_scene
+from helper import add_robot_to_scene, attach_existing_robot_to_scene
 from motion_gen_compat import describe_dof_layout, get_retract_state_for_articulation
 from pick_place_state_machine_support import (
     PickPlaceTeachingStateMachine,
@@ -69,6 +69,15 @@ USD_STAGE_PATH = r"D:\isaac-sim\your_scenes\pick_place_workcell.usd"
 ROBOT_CFG_NAME = "franka.yml"
 EXTERNAL_ASSET_PATH = None
 EXTERNAL_ROBOT_CONFIGS_PATH = None
+
+# Robot source mode:
+# - "reuse_existing": attach to a robot articulation that is already in the USD stage
+# - "import_robot": import the robot from the YAML/URDF config at runtime
+ROBOT_SCENE_MODE = "reuse_existing"
+EXISTING_ROBOT_PRIM_PATH = "/World/Franka"
+RESET_EXISTING_ROBOT_TO_RETRACT = True
+
+# Used only when ROBOT_SCENE_MODE == "import_robot"
 ROBOT_BASE_POSITION = [0.0, 0.0, 0.0]
 ADD_DEFAULT_GROUND_PLANE_IF_MISSING = False
 
@@ -121,11 +130,16 @@ SCENE_ADDON_BOXES = []
 # - pregrasp_height / grasp_height
 # - lift_height / preplace_height / place_height / retreat_height
 # - gripper_joint_names when you change the robot
+# - task_orientation_frame:
+#     "world" means the quaternion below is defined in world coordinates and
+#     will be converted into the robot base frame automatically
+#     "robot" means the quaternion is already defined in the robot base frame
 STATE_MACHINE_CONFIG = {
     "gripper_joint_names": ["panda_finger_joint1", "panda_finger_joint2"],
     "gripper_open_position": 0.04,
     "gripper_closed_position": 0.0,
     "task_orientation": [0.0, 0.0, -1.0, 0.0],
+    "task_orientation_frame": "world",
     "pregrasp_height": 0.16,
     "grasp_height": 0.085,
     "lift_height": 0.24,
@@ -170,6 +184,38 @@ def _collision_checker_type_from_config():
     if checker_name not in mapping:
         raise ValueError(f"Unsupported COLLISION_CHECKER={COLLISION_CHECKER}")
     return mapping[checker_name]
+
+
+def _create_or_reuse_robot(robot_cfg, world):
+    scene_mode = str(ROBOT_SCENE_MODE).lower()
+    if scene_mode == "reuse_existing":
+        robot, robot_prim_path = attach_existing_robot_to_scene(
+            robot_cfg,
+            world,
+            robot_prim_path=EXISTING_ROBOT_PRIM_PATH,
+            initialize_world=False,
+        )
+        print(
+            "USD_PICK_PLACE_TEMPLATE: reusing existing robot articulation "
+            f"from {EXISTING_ROBOT_PRIM_PATH} (resolved root={robot_prim_path})",
+            flush=True,
+        )
+        return robot, robot_prim_path
+
+    if scene_mode == "import_robot":
+        robot, robot_prim_path = add_robot_to_scene(
+            robot_cfg,
+            world,
+            position=np.asarray(ROBOT_BASE_POSITION, dtype=np.float32),
+            initialize_world=False,
+        )
+        print(f"USD_PICK_PLACE_TEMPLATE: imported robot at {robot_prim_path}", flush=True)
+        return robot, robot_prim_path
+
+    raise ValueError(
+        "Unsupported ROBOT_SCENE_MODE. "
+        f"Expected 'reuse_existing' or 'import_robot', got {ROBOT_SCENE_MODE}"
+    )
 
 
 async def _wait_for_stage_loading() -> None:
@@ -314,27 +360,31 @@ async def main() -> None:
         dtype=np.float32,
     )
 
-    robot, robot_prim_path = add_robot_to_scene(
-        robot_cfg,
-        world,
-        position=np.asarray(ROBOT_BASE_POSITION, dtype=np.float32),
-        initialize_world=False,
-    )
-    print(f"USD_PICK_PLACE_TEMPLATE: robot imported at {robot_prim_path}", flush=True)
+    robot, robot_prim_path = _create_or_reuse_robot(robot_cfg, world)
 
     await world.reset_async()
     robot.initialize()
 
     robot_dof_names = list(robot.dof_names)
     robot_idx_list = [robot.get_dof_index(name) for name in robot_dof_names]
-    q_start_full = JointState.from_position(
-        tensor_args.to_device(full_retract_config).view(1, -1),
-        joint_names=full_joint_names,
-    ).get_ordered_joint_state(robot_dof_names)
-    robot.set_joint_positions(
-        q_start_full.position.view(-1).detach().cpu().numpy(),
-        robot_idx_list,
+    should_reset_to_retract = (
+        str(ROBOT_SCENE_MODE).lower() != "reuse_existing" or bool(RESET_EXISTING_ROBOT_TO_RETRACT)
     )
+    if should_reset_to_retract:
+        q_start_full = JointState.from_position(
+            tensor_args.to_device(full_retract_config).view(1, -1),
+            joint_names=full_joint_names,
+        ).get_ordered_joint_state(robot_dof_names)
+        robot.set_joint_positions(
+            q_start_full.position.view(-1).detach().cpu().numpy(),
+            robot_idx_list,
+        )
+        print("USD_PICK_PLACE_TEMPLATE: robot reset to retract configuration", flush=True)
+    else:
+        print(
+            "USD_PICK_PLACE_TEMPLATE: keeping the existing articulation pose from the USD stage",
+            flush=True,
+        )
     robot._articulation_view.set_max_efforts(
         values=np.full(len(robot_idx_list), 5000.0, dtype=np.float32),
         joint_indices=robot_idx_list,
@@ -371,17 +421,18 @@ async def main() -> None:
         robot_dof_names,
     )
 
-    _, q_start_full = get_retract_state_for_articulation(
-        motion_gen,
-        tensor_args,
-        full_joint_names,
-        full_retract_config,
-        robot_dof_names,
-    )
-    robot.set_joint_positions(
-        q_start_full.position.view(-1).detach().cpu().numpy(),
-        robot_idx_list,
-    )
+    if should_reset_to_retract:
+        _, q_start_full = get_retract_state_for_articulation(
+            motion_gen,
+            tensor_args,
+            full_joint_names,
+            full_retract_config,
+            robot_dof_names,
+        )
+        robot.set_joint_positions(
+            q_start_full.position.view(-1).detach().cpu().numpy(),
+            robot_idx_list,
+        )
 
     state_machine = PickPlaceTeachingStateMachine(
         world=world,
