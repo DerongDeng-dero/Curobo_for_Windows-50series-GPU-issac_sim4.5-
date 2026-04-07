@@ -14,6 +14,47 @@ its affiliates is strictly prohibited.
 
 [for windows OS](workspace_win/readme.md)
 
+## Documentation
+
+Chinese:
+
+- [Reading order and overview](docs/zh-cn_version/DOCS_READING_ORDER_AND_OVERVIEW.zh-CN.md)
+- [Windows + Isaac Sim 4.5+ full tutorial](docs/zh-cn_version/WINDOWS_ISAACSIM_CUROBO_INSTALL_TUTORIAL.zh-CN.md)
+- [Installable version manual](docs/zh-cn_version/INSTALLABLE_VERSION_MANUAL.zh-CN.md)
+- [Selector + in-app cuRobo beginner guide](docs/zh-cn_version/ISAACSIM_SELECTOR_IN_APP_CUROBO_BEGINNER_GUIDE.zh-CN.md)
+- [Custom scene workflow beginner guide](docs/zh-cn_version/ISAACSIM_CUSTOM_SCENE_WORKFLOW_BEGINNER_GUIDE.zh-CN.md)
+- [Pick-place state machine and scene modeling guide](docs/zh-cn_version/ISAACSIM_PICK_PLACE_STATE_MACHINE_AND_SCENE_MODELING_GUIDE.zh-CN.md)
+- [Load your own USD scene and attach pick-place state machine guide](docs/zh-cn_version/ISAACSIM_USD_SCENE_PICK_PLACE_WORKFLOW_GUIDE.zh-CN.md)
+- [Full repair log and maintenance guide](docs/zh-cn_version/curobo_isaacsim_windows_full_fix_guide.zh-CN.md)
+
+English:
+
+- [Reading order and overview](docs/en_version/DOCS_READING_ORDER_AND_OVERVIEW.en.md)
+- [Windows + Isaac Sim 4.5+ full tutorial](docs/en_version/WINDOWS_ISAACSIM_CUROBO_INSTALL_TUTORIAL.en.md)
+- [Installable version manual](docs/en_version/INSTALLABLE_VERSION_MANUAL.en.md)
+- [Selector + in-app cuRobo beginner guide](docs/en_version/ISAACSIM_SELECTOR_IN_APP_CUROBO_BEGINNER_GUIDE.en.md)
+- [Custom scene workflow beginner guide](docs/en_version/ISAACSIM_CUSTOM_SCENE_WORKFLOW_BEGINNER_GUIDE.en.md)
+- [Pick-place state machine and scene modeling guide](docs/en_version/ISAACSIM_PICK_PLACE_STATE_MACHINE_AND_SCENE_MODELING_GUIDE.en.md)
+- [Load your own USD scene and attach pick-place state machine guide](docs/en_version/ISAACSIM_USD_SCENE_PICK_PLACE_WORKFLOW_GUIDE.en.md)
+- [Full repair log and maintenance guide](docs/en_version/curobo_isaacsim_windows_full_fix_guide.en.md)
+
+## Windows / Isaac Sim Quick Start
+
+```powershell
+cd D:\isaac-sim\zzcurobo\curobo_for_windows
+.\install_in_isaacsim.bat
+.\verify_isaacsim_integration.bat
+```
+
+## Windows / Isaac Sim Demo Launch
+
+```powershell
+cd D:\isaac-sim\zzcurobo\curobo_for_windows
+.\run_isaacsim_curobo_demo.bat
+```
+
+This launcher now defaults to `examples/isaac_sim/motion_gen_reacher.py`, while smoke validation remains available through `examples/isaac_sim/gui_motion_gen_smoke.py` and `run_gui_smoke_capture.ps1`.
+
 **Check [curobo.org](https://curobo.org) for installing and getting started with examples!**
 
 Use [Discussions](https://github.com/NVlabs/curobo/discussions) for questions on using this package.

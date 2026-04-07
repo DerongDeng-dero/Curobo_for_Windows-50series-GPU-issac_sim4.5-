@@ -595,15 +595,30 @@ class KinematicModel(KinematicModelConfig):
 
     @property
     def retract_config(self):
-        return self.robot_model.kinematics_config.cspace.retract_config
+        return self._get_active_cspace_tensor(self.robot_model.kinematics_config.cspace.retract_config)
 
     @property
     def cspace_distance_weight(self):
-        return self.robot_model.kinematics_config.cspace.cspace_distance_weight
+        return self._get_active_cspace_tensor(
+            self.robot_model.kinematics_config.cspace.cspace_distance_weight
+        )
 
     @property
     def null_space_weight(self):
-        return self.robot_model.kinematics_config.cspace.null_space_weight
+        return self._get_active_cspace_tensor(self.robot_model.kinematics_config.cspace.null_space_weight)
+
+    def _get_active_cspace_tensor(self, value: torch.Tensor) -> torch.Tensor:
+        if value is None:
+            return value
+        value = value.reshape(-1)
+        if value.numel() == self.n_dofs or value.numel() <= 1:
+            return value
+        all_joint_names = self.robot_model.all_articulated_joint_names
+        if all_joint_names is None or len(all_joint_names) != value.numel():
+            return value
+        full_js = JointState.from_position(value, joint_names=all_joint_names)
+        active_js = self.robot_model.get_active_js(full_js)
+        return active_js.position.reshape(-1)
 
     @property
     def max_acceleration(self):

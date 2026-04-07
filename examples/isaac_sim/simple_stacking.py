@@ -9,7 +9,6 @@
 # its affiliates is strictly prohibited.
 #
 
-
 try:
     # Third Party
     import isaacsim
@@ -76,6 +75,7 @@ from omni.isaac.core.utils.string import find_unique_string_name
 from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.core.utils.viewports import set_camera_view
 from omni.isaac.franka import Franka
+from motion_gen_compat import plan_single_with_compat
 
 # CuRobo
 from curobo.geom.sdf.world import CollisionCheckerType
@@ -182,6 +182,10 @@ class CuroboController(BaseController):
             pose_cost_metric=pose_metric,
             time_dilation_factor=0.75,
         )
+        self.fallback_plan_config = self.plan_config.clone()
+        self.fallback_plan_config.enable_graph = True
+        self.fallback_plan_config.enable_finetune_trajopt = False
+        self.fallback_plan_config.parallel_finetune = False
         self.usd_help.load_stage(self.my_world.stage)
         self.cmd_plan = None
         self.cmd_idx = 0
@@ -232,7 +236,15 @@ class CuroboController(BaseController):
             joint_names=js_names,
         )
         cu_js = cu_js.get_ordered_joint_state(self.motion_gen.kinematics.joint_names)
-        result = self.motion_gen.plan_single(cu_js.unsqueeze(0), ik_goal, self.plan_config.clone())
+        compat_plan = plan_single_with_compat(
+            self.motion_gen,
+            cu_js.unsqueeze(0),
+            ik_goal,
+            self.plan_config.clone(),
+            fallback_plan_config=self.fallback_plan_config.clone(),
+            log_prefix="SIMPLE_STACKING",
+        )
+        result = compat_plan.result
         if self._save_log:  # and not result.success.item(): # logging for debugging
             UsdHelper.write_motion_gen_log(
                 result,
@@ -269,7 +281,7 @@ class CuroboController(BaseController):
             succ = result.success.item()
             if succ:
                 cmd_plan = result.get_interpolated_plan()
-                self.idx_list = [i for i in range(len(self.cmd_js_names))]
+                self.idx_list = [js_names.index(name) for name in self.cmd_js_names]
                 self.cmd_plan = cmd_plan.get_ordered_joint_state(self.cmd_js_names)
             else:
                 carb.log_warn("Plan did not converge to a solution.")

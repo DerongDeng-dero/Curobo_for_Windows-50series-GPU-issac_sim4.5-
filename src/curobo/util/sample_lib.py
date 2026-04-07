@@ -25,7 +25,7 @@ from torch.distributions.multivariate_normal import MultivariateNormal
 # CuRobo
 from curobo.types.base import TensorDeviceType
 from curobo.util.logger import log_error, log_warn
-from curobo.util.torch_utils import get_torch_jit_decorator
+from curobo.util.torch_utils import get_torch_jit_decorator, is_cuda_runtime_compile_available
 
 # Local Folder
 from ..opt.particle.particle_opt_utils import get_stomp_cov
@@ -504,10 +504,38 @@ class HaltonGenerator:
     def get_gaussian_samples(self, num_samples, variance=1.0):
         std_dev = np.sqrt(variance)
         uniform_samples = self.get_samples(num_samples, False)
-        gaussian_halton_samples = gaussian_transform(
-            uniform_samples, self.proj_mat, self.i_mat, std_dev
-        )
+        if _should_use_cpu_runtime_compile_fallback(uniform_samples):
+            gaussian_halton_samples = gaussian_transform_cpu_fallback(
+                uniform_samples, self.proj_mat, self.i_mat, std_dev
+            )
+        else:
+            gaussian_halton_samples = gaussian_transform(
+                uniform_samples, self.proj_mat, self.i_mat, std_dev
+            )
         return gaussian_halton_samples
+
+
+def _should_use_cpu_runtime_compile_fallback(samples: torch.Tensor) -> bool:
+    return samples.device.type == "cuda" and not is_cuda_runtime_compile_available()
+
+
+def _erfinv_cpu_fallback(samples: torch.Tensor) -> torch.Tensor:
+    if not _should_use_cpu_runtime_compile_fallback(samples):
+        return torch.erfinv(samples)
+
+    cpu_samples = samples.to(device="cpu")
+    cpu_result = torch.erfinv(cpu_samples)
+    return cpu_result.to(device=samples.device, dtype=samples.dtype)
+
+
+def gaussian_transform_cpu_fallback(
+    uniform_samples: torch.Tensor, proj_mat: torch.Tensor, i_mat: torch.Tensor, std_dev: float
+):
+    changed_samples = 1.99 * uniform_samples - 0.99
+    gaussian_halton_samples = proj_mat * _erfinv_cpu_fallback(changed_samples)
+    i_mat = i_mat * std_dev
+    gaussian_halton_samples = torch.matmul(gaussian_halton_samples, i_mat)
+    return gaussian_halton_samples
 
 
 @get_torch_jit_decorator()
@@ -665,7 +693,7 @@ def generate_gaussian_halton_samples(
 
     gaussian_halton_samples = torch.sqrt(
         torch.tensor([2.0], device=tensor_args.device, dtype=tensor_args.dtype)
-    ) * torch.erfinv(2 * uniform_halton_samples - 1)
+    ) * _erfinv_cpu_fallback(2 * uniform_halton_samples - 1)
 
     # project them to covariance:
     i_mat = torch.eye(ndims, device=tensor_args.device, dtype=tensor_args.dtype)
@@ -684,5 +712,5 @@ def generate_gaussian_sobol_samples(
 
     gaussian_sobol_samples = torch.sqrt(
         torch.tensor([2.0], device=tensor_args.device, dtype=tensor_args.dtype)
-    ) * torch.erfinv(2 * uniform_sobol_samples - 1)
+    ) * _erfinv_cpu_fallback(2 * uniform_sobol_samples - 1)
     return gaussian_sobol_samples

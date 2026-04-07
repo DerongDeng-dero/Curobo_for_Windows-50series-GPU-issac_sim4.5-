@@ -93,6 +93,57 @@ def is_torch_compile_available():
     return True
 
 
+@lru_cache(maxsize=1)
+def is_torch_jit_available():
+    env_variable = os.environ.get("CUROBO_TORCH_JIT_DISABLE")
+    if env_variable is not None:
+        if bool(int(env_variable)):
+            log_info("Environment variable for CUROBO_TORCH_JIT is set to Disable")
+            return False
+        return True
+
+    if os.environ.get("PYTORCH_JIT") == "0":
+        log_info("PYTORCH_JIT=0 detected, disabling torch.jit.")
+        return False
+
+    if not torch.cuda.is_available() or torch.version.cuda is None:
+        return True
+
+    device_capability = torch.cuda.get_device_capability()
+    cuda_version = version.parse(torch.version.cuda)
+    if device_capability[0] >= 12 and cuda_version < version.parse("12.4"):
+        log_warn(
+            "Disabling torch.jit because NVRTC in CUDA "
+            + str(torch.version.cuda)
+            + " does not support sm_"
+            + str(device_capability[0])
+            + str(device_capability[1])
+            + "."
+        )
+        return False
+    return True
+
+
+@lru_cache(maxsize=1)
+def is_cuda_runtime_compile_available():
+    if not torch.cuda.is_available() or torch.version.cuda is None:
+        return True
+
+    device_capability = torch.cuda.get_device_capability()
+    cuda_version = version.parse(torch.version.cuda)
+    if device_capability[0] >= 12 and cuda_version < version.parse("12.4"):
+        log_warn(
+            "Disabling CUDA runtime-compiled torch ops because NVRTC in CUDA "
+            + str(torch.version.cuda)
+            + " does not support sm_"
+            + str(device_capability[0])
+            + str(device_capability[1])
+            + "."
+        )
+        return False
+    return True
+
+
 def get_torch_compile_options() -> dict:
     options = {}
     if is_torch_compile_available():
@@ -155,7 +206,7 @@ def get_torch_jit_decorator(
 ):
     if not force_jit and is_torch_compile_available():
         return torch.compile(options=get_torch_compile_options(), dynamic=dynamic)
-    elif not only_valid_for_compile:
+    elif not only_valid_for_compile and is_torch_jit_available():
         return torch.jit.script
     else:
         return empty_decorator

@@ -22,7 +22,11 @@ from curobo.cuda_robot_model.types import JointLimits
 from curobo.types.robot import JointState
 from curobo.types.tensor import T_DOF
 from curobo.util.logger import log_error, log_warn
-from curobo.util.torch_utils import get_cache_fn_decorator, get_torch_jit_decorator
+from curobo.util.torch_utils import (
+    get_cache_fn_decorator,
+    get_torch_jit_decorator,
+    is_cuda_runtime_compile_available,
+)
 from curobo.util.warp import init_warp, is_runtime_warp_kernel_enabled, warp_support_kernel_key
 
 # Local Folder
@@ -97,7 +101,13 @@ class BoundCost(CostBase, BoundCostConfig):
     def __init__(self, config: BoundCostConfig):
         BoundCostConfig.__init__(self, **vars(config))
         CostBase.__init__(self)
-        init_warp()
+        self._use_torch_fallback = (
+            self.tensor_args.device.type == "cuda" and not is_cuda_runtime_compile_available()
+        )
+        if self._use_torch_fallback:
+            log_warn("Using PyTorch fallback for BoundCost because Warp kernels are disabled.")
+        else:
+            init_warp()
         self._batch_size = -1
         self._horizon = -1
         self._dof = -1
@@ -120,6 +130,156 @@ class BoundCost(CostBase, BoundCostConfig):
 
             if self.cost_type == BoundCostType.BOUNDS_SMOOTH:
                 self._l2_cost = make_bound_pos_smooth_kernel(self.dof)
+
+    def _bound_delta(self, value: torch.Tensor, lower: torch.Tensor, upper: torch.Tensor):
+        zeros = torch.zeros_like(value)
+        return torch.where(value < lower, value - lower, torch.where(value > upper, value - upper, zeros))
+
+    def _expand_dof_tensor(self, value: torch.Tensor, dof: int) -> torch.Tensor:
+        value = value.reshape(-1)
+        if value.numel() == dof:
+            return value.view(1, 1, dof)
+        if value.numel() == 1:
+            return value.view(1, 1, 1).expand(1, 1, dof)
+        raise ValueError(f"Expected tensor with 1 or {dof} values, got {value.numel()}")
+
+    def _get_scalar_tensor(self, value: torch.Tensor, index: int = 0) -> torch.Tensor:
+        if not torch.is_tensor(value):
+            value = self.tensor_args.to_device([value])
+        value = value.reshape(-1)
+        use_index = min(index, value.numel() - 1)
+        return value[use_index].view(1, 1, 1)
+
+    def _get_retract_target(
+        self, retract_config: torch.Tensor, retract_idx: torch.Tensor, batch: int, horizon: int, dof: int
+    ) -> torch.Tensor:
+        if retract_config.dim() == 1:
+            retract_config = retract_config.unsqueeze(0)
+        else:
+            retract_config = retract_config.reshape(-1, dof)
+
+        retract_idx = retract_idx.long().reshape(-1)
+        if retract_idx.numel() == 0:
+            retract_idx = torch.zeros((batch,), device=retract_config.device, dtype=torch.long)
+        elif retract_idx.numel() == 1:
+            retract_idx = retract_idx.expand(batch)
+        else:
+            retract_idx = retract_idx[:batch]
+            if retract_idx.numel() < batch:
+                pad_value = retract_idx[-1]
+                pad = pad_value.expand(batch - retract_idx.numel())
+                retract_idx = torch.cat((retract_idx, pad), dim=0)
+        retract_idx = torch.clamp(retract_idx, min=0, max=retract_config.shape[0] - 1)
+        target = retract_config[retract_idx]
+        return target.view(batch, 1, dof).expand(batch, horizon, dof)
+
+    def _forward_torch(
+        self,
+        state_batch: JointState,
+        retract_config: torch.Tensor,
+        retract_idx: torch.Tensor,
+    ):
+        pos = state_batch.position
+        vel = state_batch.velocity
+        acc = state_batch.acceleration
+        jerk = state_batch.jerk
+        batch, horizon, dof = pos.shape
+        target = self._get_retract_target(retract_config, retract_idx, batch, horizon, dof)
+
+        p_l = self.joint_limits.position[0].view(1, 1, dof)
+        p_u = self.joint_limits.position[1].view(1, 1, dof)
+        p_range = p_u - p_l
+        p_eta = self._get_scalar_tensor(self.activation_distance, 0) * p_range
+        p_l = p_l + p_eta
+        p_u = p_u - p_eta
+
+        w_pos = self._get_scalar_tensor(self.weight, 0)
+        null_w = self._get_scalar_tensor(self.null_space_weight, 0)
+        vec_weight = self._expand_dof_tensor(self.vec_weight, dof)
+        p_safe = torch.clamp(p_range, min=1e-6)
+
+        null_cost = null_w * vec_weight * (pos - target) ** 2
+        pos_delta = self._bound_delta(pos, p_l, p_u)
+
+        if self.cost_type == BoundCostType.POSITION:
+            w_pos = torch.where(p_range < 1.0, w_pos / p_safe, w_pos)
+            return torch.sum(null_cost + w_pos * pos_delta**2, dim=-1)
+
+        v_l = self.joint_limits.velocity[0].view(1, 1, dof)
+        v_u = self.joint_limits.velocity[1].view(1, 1, dof)
+        v_range = v_u - v_l
+        v_eta = self._get_scalar_tensor(self.activation_distance, 1) * v_range
+        v_l = v_l + v_eta
+        v_u = v_u - v_eta
+
+        a_l = self.joint_limits.acceleration[0].view(1, 1, dof)
+        a_u = self.joint_limits.acceleration[1].view(1, 1, dof)
+        a_range = a_u - a_l
+        a_eta = self._get_scalar_tensor(self.activation_distance, 2) * a_range
+        a_l = a_l + a_eta
+        a_u = a_u - a_eta
+
+        j_l = self.joint_limits.jerk[0].view(1, 1, dof)
+        j_u = self.joint_limits.jerk[1].view(1, 1, dof)
+        j_range = j_u - j_l
+        j_eta = self._get_scalar_tensor(self.activation_distance, 3) * j_range
+        j_l = j_l + j_eta
+        j_u = j_u - j_eta
+
+        w_vel = self._get_scalar_tensor(self.weight, 1)
+        w_acc = self._get_scalar_tensor(self.weight, 2)
+        w_jerk = self._get_scalar_tensor(self.weight, 3)
+
+        v_safe = torch.clamp(v_range, min=1e-6)
+        a_safe = torch.clamp(a_range, min=1e-6)
+        j_safe = torch.clamp(j_range, min=1e-6)
+
+        w_pos = torch.where(p_range < 1.0, w_pos / (p_safe * p_safe), w_pos)
+        w_vel = torch.where(v_range < 1.0, w_vel / (v_safe * v_safe), w_vel)
+        w_acc = torch.where(a_range < 1.0, w_acc / (a_safe * a_safe), w_acc)
+        w_jerk = torch.where(j_range < 1.0, w_jerk / (j_safe * j_safe), w_jerk)
+
+        vel_delta = self._bound_delta(vel, v_l, v_u)
+        acc_delta = self._bound_delta(acc, a_l, a_u)
+        jerk_delta = self._bound_delta(jerk, j_l, j_u)
+
+        total_cost = (
+            null_cost
+            + w_pos * pos_delta**2
+            + w_vel * vel_delta**2
+            + w_acc * acc_delta**2
+            + w_jerk * jerk_delta**2
+        )
+
+        if self.cost_type == BoundCostType.BOUNDS:
+            return torch.sum(total_cost, dim=-1)
+
+        cspace_weight = self._expand_dof_tensor(self.cspace_distance_weight, dof)
+        run_weight_vel = self._run_weight_vel.view(1, horizon, 1)
+        run_weight_acc = self._run_weight_acc.view(1, horizon, 1) * cspace_weight
+        run_weight_jerk = self._run_weight_jerk.view(1, horizon, 1) * cspace_weight
+
+        smooth_vel = self._get_scalar_tensor(self.smooth_weight, 0)
+        smooth_acc = self._get_scalar_tensor(self.smooth_weight, 1) * cspace_weight
+        smooth_jerk = self._get_scalar_tensor(self.smooth_weight, 2) * cspace_weight
+        alpha_v = self._get_scalar_tensor(self.smooth_weight, 3)
+
+        scaled_run_weight_vel = torch.where(
+            run_weight_vel < 1.0, run_weight_vel * cspace_weight, run_weight_vel
+        )
+        scaled_smooth_vel = torch.where(
+            run_weight_vel < 1.0, smooth_vel * cspace_weight, smooth_vel
+        )
+
+        vel_cost = torch.where(
+            run_weight_vel < 1.0,
+            scaled_smooth_vel * scaled_run_weight_vel * vel**2,
+            scaled_smooth_vel * scaled_run_weight_vel * torch.log2(torch.cosh(alpha_v * vel)),
+        )
+        acc_cost = smooth_acc * run_weight_acc * acc**2
+        jerk_cost = smooth_jerk * run_weight_jerk * jerk**2
+
+        return torch.sum(total_cost + vel_cost + acc_cost + jerk_cost, dim=-1)
 
     def update_batch_size(self, batch, horizon, dof):
         if self._batch_size != batch or self._horizon != horizon or self._dof != dof:
@@ -202,6 +362,9 @@ class BoundCost(CostBase, BoundCostConfig):
             retract_config = self._retract_cfg
         if retract_idx is None:
             retract_idx = self._retract_cfg_idx
+
+        if self._use_torch_fallback:
+            return self._forward_torch(state_batch, retract_config, retract_idx)
 
         if self.cost_type == BoundCostType.BOUNDS_SMOOTH:
             if self.use_l2_kernel:

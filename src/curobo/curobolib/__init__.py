@@ -14,3 +14,30 @@ C++, and compiled with PyTorch for use in Python.
 
 All implementations are in ``.cu`` files in ``cpp`` sub-directory.
 """
+
+# Standard Library
+import os
+import pathlib
+import sys
+
+_DLL_DIRECTORIES = []
+
+
+def _prepare_windows_torch_dlls():
+    if sys.platform != "win32":
+        return
+
+    # Import torch before native extensions so its DLLs are available to dependent .pyd modules.
+    import torch
+
+    if not hasattr(os, "add_dll_directory"):
+        return
+
+    torch_lib_dir = pathlib.Path(torch.__file__).resolve().parent / "lib"
+    if torch_lib_dir.exists():
+        _DLL_DIRECTORIES.append(os.add_dll_directory(str(torch_lib_dir)))
+
+
+_prepare_windows_torch_dlls()
+
+del _prepare_windows_torch_dlls

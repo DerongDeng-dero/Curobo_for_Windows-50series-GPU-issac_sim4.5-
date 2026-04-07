@@ -78,7 +78,7 @@ def _get_version():
 
 
 # Set `__version__` attribute
-__version__ = _get_version()
-
+#__version__ = _get_version()
+__version__ = "0.1.0"
 # Remove `_get_version` so it is not added as an attribute
 del _get_version

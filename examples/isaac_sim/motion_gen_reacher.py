@@ -104,6 +104,12 @@ from typing import Dict
 import carb
 import numpy as np
 from helper import add_extensions, add_robot_to_scene
+from motion_gen_compat import (
+    describe_dof_layout,
+    get_full_articulation_plan,
+    get_retract_state_for_articulation,
+    plan_single_with_compat,
+)
 from omni.isaac.core import World
 from omni.isaac.core.objects import cuboid, sphere
 
@@ -184,12 +190,17 @@ def main():
         robot_cfg["kinematics"]["external_asset_path"] = args.external_asset_path
     if args.external_robot_configs_path is not None:
         robot_cfg["kinematics"]["external_robot_configs_path"] = args.external_robot_configs_path
-    j_names = robot_cfg["kinematics"]["cspace"]["joint_names"]
-    default_config = robot_cfg["kinematics"]["cspace"]["retract_config"]
+    full_joint_names = robot_cfg["kinematics"]["cspace"]["joint_names"]
+    full_retract_config = np.asarray(
+        robot_cfg["kinematics"]["cspace"]["retract_config"], dtype=np.float32
+    )
 
     robot, robot_prim_path = add_robot_to_scene(robot_cfg, my_world)
 
     articulation_controller = None
+    robot_dof_names = None
+    default_articulation_state = None
+    idx_list = None
 
     world_cfg_table = WorldConfig.from_dict(
         load_yaml(join_path(get_world_configs_path(), "collision_table.yml"))
@@ -207,7 +218,8 @@ def main():
     optimize_dt = True
     trajopt_tsteps = 32
     trim_steps = None
-    max_attempts = 4
+    max_attempts = 12
+    plan_timeout = 20.0
     interpolation_dt = 0.05
     enable_finetune_trajopt = True
     if args.reactive:
@@ -245,9 +257,20 @@ def main():
         enable_graph=False,
         enable_graph_attempt=2,
         max_attempts=max_attempts,
+        timeout=plan_timeout,
         enable_finetune_trajopt=enable_finetune_trajopt,
         time_dilation_factor=0.5 if not args.reactive else 1.0,
     )
+    fallback_plan_config = None
+    if enable_finetune_trajopt:
+        fallback_plan_config = MotionGenPlanConfig(
+            enable_graph=True,
+            enable_graph_attempt=2,
+            max_attempts=max_attempts,
+            timeout=plan_timeout,
+            enable_finetune_trajopt=False,
+            time_dilation_factor=0.5,
+        )
 
     usd_help.load_stage(my_world.stage)
     usd_help.add_world_to_stage(world_cfg, base_frame="/World")
@@ -276,8 +299,26 @@ def main():
             articulation_controller = robot.get_articulation_controller()
         if step_index < 10:
             robot._articulation_view.initialize()
-            idx_list = [robot.get_dof_index(x) for x in j_names]
-            robot.set_joint_positions(default_config, idx_list)
+            if idx_list is None:
+                robot_dof_names = list(robot.dof_names)
+                _, default_articulation_state = get_retract_state_for_articulation(
+                    motion_gen,
+                    tensor_args,
+                    full_joint_names,
+                    full_retract_config,
+                    robot_dof_names,
+                )
+                idx_list = [robot.get_dof_index(name) for name in robot_dof_names]
+                describe_dof_layout(
+                    "MOTION_REACHER",
+                    full_joint_names,
+                    motion_gen.kinematics.joint_names,
+                    robot_dof_names,
+                )
+            robot.set_joint_positions(
+                default_articulation_state.position.view(-1).detach().cpu().numpy(),
+                idx_list,
+            )
 
             robot._articulation_view.set_max_efforts(
                 values=np.array([5000 for i in range(len(idx_list))]), joint_indices=idx_list
@@ -382,11 +423,25 @@ def main():
                 position=tensor_args.to_device(ee_translation_goal),
                 quaternion=tensor_args.to_device(ee_orientation_teleop_goal),
             )
-            plan_config.pose_cost_metric = pose_metric
-            result = motion_gen.plan_single(cu_js.unsqueeze(0), ik_goal, plan_config)
+            active_plan_config = plan_config.clone()
+            active_plan_config.pose_cost_metric = pose_metric
+            active_fallback_plan_config = None
+            if fallback_plan_config is not None:
+                active_fallback_plan_config = fallback_plan_config.clone()
+                active_fallback_plan_config.pose_cost_metric = pose_metric
+            compat_plan = plan_single_with_compat(
+                motion_gen,
+                cu_js.unsqueeze(0),
+                ik_goal,
+                active_plan_config,
+                fallback_plan_config=active_fallback_plan_config,
+                log_prefix="MOTION_REACHER",
+            )
+            result = compat_plan.result
             # ik_result = ik_solver.solve_single(ik_goal, cu_js.position.view(1,-1), cu_js.position.view(1,1,-1))
 
-            succ = result.success.item()  # ik_result.success.item()
+            succ = compat_plan.success  # ik_result.success.item()
+            print(f"MOTION_REACHER: planning success={succ}", flush=True)
             if num_targets == 1:
                 if args.constrain_grasp_approach:
                     pose_metric = PoseCostMetric.create_grasp_approach_metric()
@@ -400,19 +455,11 @@ def main():
                     pose_metric = PoseCostMetric(hold_partial_pose=True, hold_vec_weight=hold_vec)
             if succ:
                 num_targets += 1
-                cmd_plan = result.get_interpolated_plan()
-                cmd_plan = motion_gen.get_full_js(cmd_plan)
-                # get only joint names that are in both:
-                idx_list = []
-                common_js_names = []
-                for x in sim_js_names:
-                    if x in cmd_plan.joint_names:
-                        idx_list.append(robot.get_dof_index(x))
-                        common_js_names.append(x)
-                # idx_list = [robot.get_dof_index(x) for x in sim_js_names]
-
-                cmd_plan = cmd_plan.get_ordered_joint_state(common_js_names)
-
+                cmd_plan = get_full_articulation_plan(
+                    motion_gen,
+                    result.get_interpolated_plan(),
+                    sim_js_names,
+                )
                 cmd_idx = 0
 
             else:

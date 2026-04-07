@@ -1,7 +1,14 @@
 .vscode*
+.idea/
+**/.idea/
+*.iml
 *.hdf5
 *data/
 *.bat
+!install_in_isaacsim.bat
+!isaacsim_python.bat
+!run_isaacsim_curobo_demo.bat
+!verify_isaacsim_integration.bat
 *.p
 *.mlx
 
@@ -179,6 +186,7 @@ examples/debug/*.onnx
 #*.obj
 *.glb
 *.onnx
+*.pyd.old
 *stltoobj.bat
 external/*
 public/*
@@ -203,4 +211,5 @@ nvidia_curobo*/
 *.csv
 
 log.log
-docs/*
+ignite.py
+ultimate.py
