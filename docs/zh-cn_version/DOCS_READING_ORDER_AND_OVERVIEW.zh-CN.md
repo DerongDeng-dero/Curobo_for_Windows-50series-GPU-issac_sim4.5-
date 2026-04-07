@@ -4,6 +4,13 @@
 
 当前这套 Windows + Isaac Sim + cuRobo 工程，已经不再只有一篇安装说明。
 
+这套文档当前主要面向这类目标环境：
+
+- Windows
+- 英伟达 RTX 50 系显卡
+- Isaac Sim 4.5 及以上版本
+- 本仓库整理过的 `curobo_for_windows` 工作流
+
 现在的文档已经覆盖了：
 
 - 安装与修复

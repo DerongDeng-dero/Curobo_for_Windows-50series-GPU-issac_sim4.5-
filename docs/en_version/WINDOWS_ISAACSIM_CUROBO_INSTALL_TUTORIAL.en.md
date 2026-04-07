@@ -1,14 +1,20 @@
-# Windows + Isaac Sim + cuRobo Installation and Repair Tutorial
+# Windows + NVIDIA RTX 50-Series + Isaac Sim 4.5+ cuRobo Installation and Repair Tutorial
 
 ## 1. Who this tutorial is for
 
 This document is intended for users who match most of the following:
 
 - you are on Windows 10 or Windows 11
-- you are using Isaac Sim
-- your GPU is relatively new, such as an RTX 50-series card
-- your Isaac Sim build is older than your GPU generation
+- you are using Isaac Sim 4.5 or later
+- your GPU is a newer NVIDIA GeForce RTX 50-series card
+- you need a repository path that explicitly targets newer GPUs on Isaac Sim 4.5+
 - `pip install -e .` keeps failing and you do not want to guess your way through it
+
+This repository is primarily maintained around that target combination:
+
+- NVIDIA GeForce RTX 50-series GPUs
+- Isaac Sim 4.5+
+- Windows
 
 This tutorial is based on a real repair and validation run in the following environment:
 

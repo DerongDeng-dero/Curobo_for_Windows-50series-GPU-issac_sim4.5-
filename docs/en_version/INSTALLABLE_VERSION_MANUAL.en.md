@@ -4,6 +4,12 @@
 
 This is the curated Windows / Isaac Sim delivery of `curobo_for_windows`.
 
+It is primarily maintained for:
+
+- Windows
+- NVIDIA GeForce RTX 50-series GPUs
+- Isaac Sim 4.5+
+
 The target is not “it might install in theory”. The target is:
 
 - one-command installation

@@ -13,16 +13,17 @@ its affiliates is strictly prohibited.
 [![ZH-CN](https://img.shields.io/badge/README-ZH--CN-16a34a?style=for-the-badge)](./README.zh-CN.md)
 
 [![Docs Hub](https://img.shields.io/badge/Docs-Hub-0f766e?style=flat-square)](./docs/README.md)
+[![GPU](https://img.shields.io/badge/GPU-NVIDIA%20RTX%2050--Series-16a34a?style=flat-square)](#repository-scope)
 [![Platform](https://img.shields.io/badge/Platform-Windows-0078D4?style=flat-square)](#windows--isaac-sim-quick-start)
-[![Isaac Sim](https://img.shields.io/badge/Isaac%20Sim-4.5-76B900?style=flat-square)](#windows--isaac-sim-quick-start)
+[![Isaac Sim](https://img.shields.io/badge/Isaac%20Sim-4.5%2B-76B900?style=flat-square)](#repository-scope)
 [![Workflow](https://img.shields.io/badge/Workflow-cuRobo%20%2B%20Isaac%20Sim-111827?style=flat-square)](./docs/README.md)
 
-# cuRobo for Windows + Isaac Sim 4.5
+# cuRobo for Windows + NVIDIA RTX 50-Series + Isaac Sim 4.5+
 
 *CUDA Accelerated Robot Library with a Windows-focused Isaac Sim workflow*
 
 This fork keeps the upstream cuRobo codebase while adding a practical
-Windows + Isaac Sim 4.5 path for installation, standalone scripts, in-app
+Windows + NVIDIA GeForce RTX 50-series + Isaac Sim 4.5+ path for installation, standalone scripts, in-app
 Script Editor workflows, pick/place teaching templates, and
 USD-scene-driven robot planning.
 
@@ -36,6 +37,17 @@ USD-scene-driven robot planning.
 - [Main standalone scene demo](./examples/isaac_sim/simple_stacking.py)
 - [USD scene reuse template](./examples/isaac_sim/gui_in_app_pick_place_from_usd_template.py)
 
+## Repository Scope
+
+This repository is primarily maintained for:
+
+- recent NVIDIA GeForce RTX 50-series GPUs on Windows
+- Isaac Sim 4.5 and later
+
+That is the main compatibility target for the installation path, the repaired
+Python wrappers, the prebuilt extension loading path, and the Isaac Sim example
+workflows in this fork.
+
 ## What This Fork Adds
 
 - Windows installation helpers: `install_in_isaacsim.bat`, `verify_isaacsim_integration.bat`
@@ -46,7 +58,7 @@ USD-scene-driven robot planning.
 
 ## Recommended Starting Points
 
-- If you need installation from scratch on Windows, start with the [Windows + Isaac Sim 4.5 tutorial](./docs/en_version/WINDOWS_ISAACSIM_CUROBO_INSTALL_TUTORIAL.en.md)
+- If you need installation from scratch on Windows, start with the [Windows + Isaac Sim 4.5+ tutorial for RTX 50-series GPUs](./docs/en_version/WINDOWS_ISAACSIM_CUROBO_INSTALL_TUTORIAL.en.md)
 - If you already have Isaac Sim running and want an in-app workflow, start with the [Selector + in-app beginner guide](./docs/en_version/ISAACSIM_SELECTOR_IN_APP_CUROBO_BEGINNER_GUIDE.en.md)
 - If you want to reuse your own USD scene, go directly to the [USD scene pick/place workflow guide](./docs/en_version/ISAACSIM_USD_SCENE_PICK_PLACE_WORKFLOW_GUIDE.en.md)
 - If you want the complete reading order, use the [docs hub](./docs/README.md)

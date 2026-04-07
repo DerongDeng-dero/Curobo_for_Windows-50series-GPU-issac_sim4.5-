@@ -4,6 +4,12 @@
 
 这是这次整理出来的 Windows / Isaac Sim 版 cuRobo 安装工具集。
 
+它当前主要面向：
+
+- Windows
+- 英伟达 RTX 50 系显卡
+- Isaac Sim 4.5 及以上版本
+
 目标不是“理论上能装”，而是：
 
 - 一键安装

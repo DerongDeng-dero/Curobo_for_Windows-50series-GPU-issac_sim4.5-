@@ -1,9 +1,20 @@
 [![EN](https://img.shields.io/badge/Docs-EN-2563eb?style=for-the-badge)](./README.md)
 [![ZH-CN](https://img.shields.io/badge/Docs-ZH--CN-16a34a?style=for-the-badge)](./README.zh-CN.md)
+[![GPU](https://img.shields.io/badge/GPU-NVIDIA%20RTX%2050--Series-16a34a?style=flat-square)](../README.zh-CN.md)
+[![Isaac Sim](https://img.shields.io/badge/Isaac%20Sim-4.5%2B-76B900?style=flat-square)](../README.zh-CN.md)
 
 # 文档总入口
 
-这个目录收纳了这套 Windows + Isaac Sim 4.5 + cuRobo 工作流的中英文文档。
+这个目录收纳了这套 Windows + NVIDIA RTX 50 系显卡 + Isaac Sim 4.5+ cuRobo 工作流的中英文文档。
+
+## 目标范围
+
+这套文档当前主要面向：
+
+- Windows 用户
+- 英伟达 RTX 50 系这类新显卡
+- Isaac Sim 4.5 及以上版本
+- 本仓库整理过的 `curobo_for_windows` 工作流
 
 ## 快速入口
 
@@ -16,7 +27,7 @@
 
 从零安装：
 
-1. [Windows + Isaac Sim 4.5+ 完整安装教程](./zh-cn_version/WINDOWS_ISAACSIM_CUROBO_INSTALL_TUTORIAL.zh-CN.md)
+1. [Windows + RTX 50 系显卡 + Isaac Sim 4.5+ 完整安装教程](./zh-cn_version/WINDOWS_ISAACSIM_CUROBO_INSTALL_TUTORIAL.zh-CN.md)
 2. [可安装版本使用手册](./zh-cn_version/INSTALLABLE_VERSION_MANUAL.zh-CN.md)
 3. [文档阅读顺序与总览](./zh-cn_version/DOCS_READING_ORDER_AND_OVERVIEW.zh-CN.md)
 
@@ -34,7 +45,7 @@ GUI 软件内使用：
 ## 中文文档
 
 1. [文档阅读顺序与总览](./zh-cn_version/DOCS_READING_ORDER_AND_OVERVIEW.zh-CN.md)
-2. [Windows + Isaac Sim 4.5+ 完整安装教程](./zh-cn_version/WINDOWS_ISAACSIM_CUROBO_INSTALL_TUTORIAL.zh-CN.md)
+2. [Windows + RTX 50 系显卡 + Isaac Sim 4.5+ 完整安装教程](./zh-cn_version/WINDOWS_ISAACSIM_CUROBO_INSTALL_TUTORIAL.zh-CN.md)
 3. [可安装版本使用手册](./zh-cn_version/INSTALLABLE_VERSION_MANUAL.zh-CN.md)
 4. [Selector + 软件内使用 cuRobo 小白指南](./zh-cn_version/ISAACSIM_SELECTOR_IN_APP_CUROBO_BEGINNER_GUIDE.zh-CN.md)
 5. [自定义场景工作流入门指南](./zh-cn_version/ISAACSIM_CUSTOM_SCENE_WORKFLOW_BEGINNER_GUIDE.zh-CN.md)

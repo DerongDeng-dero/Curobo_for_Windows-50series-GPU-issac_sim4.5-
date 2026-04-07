@@ -1,8 +1,15 @@
-# Windows + Isaac Sim + cuRobo Documentation Reading Order and Overview
+# Windows + NVIDIA RTX 50-Series + Isaac Sim 4.5+ cuRobo Documentation Reading Order and Overview
 
 ## 1. What this document is for
 
 This repository now contains a full documentation set, not just a single installation note.
+
+The current document set is primarily organized for this target combination:
+
+- Windows
+- NVIDIA GeForce RTX 50-series GPUs
+- Isaac Sim 4.5+
+- the `curobo_for_windows` workflow in this repository
 
 The current documents cover:
 

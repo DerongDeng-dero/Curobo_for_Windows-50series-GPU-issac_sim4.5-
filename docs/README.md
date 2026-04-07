@@ -1,10 +1,20 @@
 [![EN](https://img.shields.io/badge/Docs-EN-2563eb?style=for-the-badge)](./README.md)
 [![ZH-CN](https://img.shields.io/badge/Docs-ZH--CN-16a34a?style=for-the-badge)](./README.zh-CN.md)
+[![GPU](https://img.shields.io/badge/GPU-NVIDIA%20RTX%2050--Series-16a34a?style=flat-square)](../README.md#repository-scope)
+[![Isaac Sim](https://img.shields.io/badge/Isaac%20Sim-4.5%2B-76B900?style=flat-square)](../README.md#repository-scope)
 
 # Docs Hub
 
 This directory contains the bilingual documentation set for the
-Windows + Isaac Sim 4.5 cuRobo workflow.
+Windows + NVIDIA GeForce RTX 50-series + Isaac Sim 4.5+ cuRobo workflow.
+
+## Target Scope
+
+These documents are primarily written for:
+
+- Windows users on recent NVIDIA GeForce RTX 50-series GPUs
+- Isaac Sim 4.5 and later
+- the repaired `curobo_for_windows` workflow in this repository
 
 ## Quick Entry
 
