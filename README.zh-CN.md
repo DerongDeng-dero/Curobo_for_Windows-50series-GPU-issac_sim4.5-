@@ -17,7 +17,7 @@ its affiliates is strictly prohibited.
 [![Isaac Sim](https://img.shields.io/badge/Isaac%20Sim-4.5-76B900?style=flat-square)](#windows--isaac-sim-快速开始)
 [![Workflow](https://img.shields.io/badge/Workflow-cuRobo%20%2B%20Isaac%20Sim-111827?style=flat-square)](./docs/README.zh-CN.md)
 
-# cuRobo for Windows + Isaac Sim 4.5
+# cuRobo for Windows + Isaac Sim 4.5+
 
 *面向 Windows + Isaac Sim 工作流整理的 CUDA 机器人规划库*
 
