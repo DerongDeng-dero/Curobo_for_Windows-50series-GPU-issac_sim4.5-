@@ -424,7 +424,4 @@ Smoke test passed.
 - 默认 demo launcher 切到 `motion_gen_reacher.py`
 - 一键安装脚本
 - 一键验证脚本
-- 详细中文教程
-
-这就是当前推荐交付给其他用户的版本。
 
