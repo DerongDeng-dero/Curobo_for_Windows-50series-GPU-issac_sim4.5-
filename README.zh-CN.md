@@ -1,4 +1,4 @@
-<!--
+﻿<!--
 Copyright (c) 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 
 NVIDIA CORPORATION, its affiliates and licensors retain all intellectual
@@ -58,9 +58,9 @@ its affiliates is strictly prohibited.
 
 ## 推荐从哪里开始
 
-- 如果你要从零安装 Windows 版本：先看[RTX 50 系 + Isaac Sim 4.5+ 安装教程](./docs/zh-cn_version/WINDOWS_ISAACSIM_CUROBO_INSTALL_TUTORIAL.zh-CN.md)
+- 如果需要从零安装 Windows 版本：先看[RTX 50 系 + Isaac Sim 4.5+ 安装教程](./docs/zh-cn_version/WINDOWS_ISAACSIM_CUROBO_INSTALL_TUTORIAL.zh-CN.md)
 - 如果你已经能打开 Isaac Sim，想直接在软件里使用：先看[Selector + 软件内使用 cuRobo 指南](./docs/zh-cn_version/ISAACSIM_SELECTOR_IN_APP_CUROBO_BEGINNER_GUIDE.zh-CN.md)
-- 如果你要复用自己的 USD 场景：直接看[USD 场景工作流指南](./docs/zh-cn_version/ISAACSIM_USD_SCENE_PICK_PLACE_WORKFLOW_GUIDE.zh-CN.md)
+- 如果需要复用用户提供的 USD 场景：直接看[USD 场景工作流指南](./docs/zh-cn_version/ISAACSIM_USD_SCENE_PICK_PLACE_WORKFLOW_GUIDE.zh-CN.md)
 - 如果你想看完整阅读顺序：直接进入[文档总入口](./docs/README.zh-CN.md)
 
 ## 文档
@@ -82,7 +82,7 @@ English:
 ## Windows / Isaac Sim 快速开始
 
 ```powershell
-cd D:\isaac-sim\zzcurobo\curobo_for_windows
+cd <REPO_ROOT>
 .\install_in_isaacsim.bat
 .\verify_isaacsim_integration.bat
 ```
@@ -90,7 +90,7 @@ cd D:\isaac-sim\zzcurobo\curobo_for_windows
 ## Windows / Isaac Sim 演示启动
 
 ```powershell
-cd D:\isaac-sim\zzcurobo\curobo_for_windows
+cd <REPO_ROOT>
 .\run_isaacsim_curobo_demo.bat
 ```
 

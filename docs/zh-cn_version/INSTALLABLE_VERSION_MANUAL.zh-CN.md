@@ -51,14 +51,14 @@
 
 作用：
 
-- 这是“已经会在 GUI 里跑 cuRobo，下一步如何改成自己的机器人和场景”的继续教程。
+- 这是“已经会在 GUI 里跑 cuRobo，下一步如何改成自定义机器人和场景”的继续教程。
 - 重点讲：
   - 如何换机器人
   - 如何改桌子和障碍物
   - 如何保持 cuRobo world 与 GUI 场景同步
-  - 如何从单次规划过渡到自己的任务脚本
+  - 如何从单次规划过渡到自定义任务脚本
 
-如果你已经跑通了 GUI 内 beginner 脚本，那么下一步优先看这篇。
+如果已经跑通了 GUI 内 beginner 脚本，那么下一步优先看这篇。
 
 ### [`docs/ISAACSIM_PICK_PLACE_STATE_MACHINE_AND_SCENE_MODELING_GUIDE.zh-CN.md`](./ISAACSIM_PICK_PLACE_STATE_MACHINE_AND_SCENE_MODELING_GUIDE.zh-CN.md)
 
@@ -70,7 +70,7 @@
   - 如何把桌子、料区、阻挡块、任务物体分层建模
   - 为什么教学型“附着”比一开始就硬上复杂接触物理更适合小白
 
-如果你已经开始从“单次规划”走向“任务流程”，下一步优先看这篇。
+如果已经开始从“单次规划”走向“任务流程”，下一步优先看这篇。
 
 ### [`docs/ISAACSIM_USD_SCENE_PICK_PLACE_WORKFLOW_GUIDE.zh-CN.md`](./ISAACSIM_USD_SCENE_PICK_PLACE_WORKFLOW_GUIDE.zh-CN.md)
 
@@ -78,12 +78,12 @@
 
 - 这是第四阶段教程。
 - 重点讲：
-  - 如何加载你自己的 USD 场景
+  - 如何加载用户提供的 USD 场景
   - 如何指定 cuRobo 应该读取哪些场景 root 作为障碍物
   - 如何把已有 pick object / pick target / place target 接到状态机
   - 如果场景里还没有任务 marker，如何让脚本自动补 runtime marker
 
-如果你已经有自己的场景资产，准备从“教学场景”进入“真实工作场景”，下一步优先看这篇。
+如果已经有自定义场景资产，准备从“教学场景”进入“真实工作场景”，下一步优先看这篇。
 
 ### [`isaacsim_python.bat`](../../isaacsim_python.bat)
 
@@ -115,7 +115,7 @@
 如果需要手动指定 Isaac Sim 根目录：
 
 ```powershell
-.\isaacsim_python.bat --isaac-root D:\isaac-sim -c "import isaacsim"
+.\isaacsim_python.bat --isaac-root <ISAAC_SIM_ROOT> -c "import isaacsim"
 ```
 
 ### [`install_in_isaacsim.bat`](../../install_in_isaacsim.bat)
@@ -201,7 +201,7 @@
 适合：
 
 - 已经跑通 beginner 脚本
-- 准备开始搭自己的工作台、障碍物和目标点
+- 准备开始搭建自定义工作台、障碍物和目标点
 
 ### [`examples/isaac_sim/gui_in_app_pick_place_state_machine_template.py`](../../examples/isaac_sim/gui_in_app_pick_place_state_machine_template.py)
 
@@ -227,12 +227,12 @@
 - 它具备：
   - 加载当前已打开的 USD 场景，或主动打开一个 USD 文件
   - 从指定 root 提取场景障碍物
-  - 将 pick-place 状态机接到你自己的 USD 场景
+  - 将 pick-place 状态机接到用户提供的 USD 场景
   - 缺少任务 marker 时自动补 runtime marker
 
 适合：
 
-- 已经有自己的 USD 场景
+- 已经有用户提供的 USD 场景
 - 准备把 pick-place 状态机接入真实工作场景
 
 ### [`run_isaacsim_curobo_demo.bat`](../../run_isaacsim_curobo_demo.bat)
@@ -243,10 +243,10 @@
 - 当前默认目标已经从 smoke 改为：
   - `examples/isaac_sim/motion_gen_reacher.py`
 
-如果你需要临时覆盖脚本入口，可以先设置：
+如果需要临时覆盖脚本入口，可以先设置：
 
 ```powershell
-$env:CUROBO_DEMO_SCRIPT='D:\isaac-sim\zzcurobo\curobo_for_windows\examples\isaac_sim\gui_motion_gen_smoke.py'
+$env:CUROBO_DEMO_SCRIPT='<REPO_ROOT>\examples\isaac_sim\gui_motion_gen_smoke.py'
 .\run_isaacsim_curobo_demo.bat
 ```
 
@@ -255,14 +255,14 @@ $env:CUROBO_DEMO_SCRIPT='D:\isaac-sim\zzcurobo\curobo_for_windows\examples\isaac
 ### 标准流程
 
 ```powershell
-cd D:\isaac-sim\zzcurobo\curobo_for_windows
+cd <REPO_ROOT>
 .\install_in_isaacsim.bat
 .\verify_isaacsim_integration.bat
 ```
 
 ### 调试流程
 
-如果你想手工调试：
+如果需要手工调试：
 
 ```powershell
 .\isaacsim_python.bat -c "import isaacsim, torch"

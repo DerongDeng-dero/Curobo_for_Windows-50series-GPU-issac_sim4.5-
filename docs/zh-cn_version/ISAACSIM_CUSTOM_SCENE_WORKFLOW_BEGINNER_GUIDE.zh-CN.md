@@ -2,7 +2,7 @@
 
 ## 1. 这份文档是上一份入门指南的下一步
 
-如果你已经完成了下面这些：
+如果下面这些已经完成：
 
 - 能正常运行 `install_in_isaacsim.bat`
 - 能正常运行 `verify_isaacsim_integration.bat`
@@ -13,7 +13,7 @@
 那么你现在已经进入第二阶段：
 
 - 不再只是“证明能跑”
-- 而是开始“搭你自己的场景”
+- 而是开始“搭自定义场景”
 
 这份文档就是为这个阶段准备的。
 
@@ -27,7 +27,7 @@
 2. 搭桌面 / 障碍物场景
 3. 让 cuRobo 读取这些障碍物
 4. 给目标姿态并规划
-5. 反复修改，逐步演进成自己的任务脚本
+5. 反复修改，逐步演进成自定义任务脚本
 
 如果你把这 5 件事掌握了，后面不管是抓取、堆叠还是搬运，都会顺很多。
 
@@ -42,7 +42,7 @@
 它和上一份 beginner 脚本的区别是：
 
 - 上一份更像“最小演示”
-- 这一份更像“你自己的场景模板”
+- 这一份更像“自定义场景模板”
 
 它把最常改的东西都集中到了文件顶部：
 
@@ -64,7 +64,7 @@
 ## 4.1 启动 Isaac Sim
 
 ```powershell
-D:\isaac-sim\isaac-sim.selector.bat
+<ISAAC_SIM_ROOT>\isaac-sim.selector.bat
 ```
 
 进入：
@@ -86,13 +86,13 @@ D:\isaac-sim\isaac-sim.selector.bat
 
 打开文件：
 
-- `D:\isaac-sim\zzcurobo\curobo_for_windows\examples\isaac_sim\gui_in_app_custom_scene_template.py`
+- `<REPO_ROOT>\examples\isaac_sim\gui_in_app_custom_scene_template.py`
 
 点击 Run。
 
-## 4.4 你应该看到什么
+## 4.4 预期现象
 
-你应该能看到：
+预期现象：
 
 - 一个机器人
 - 一张桌子
@@ -264,18 +264,18 @@ ROBOT_CFG_NAME = "your_robot.yml"
 - 这个 yaml 已经能被 cuRobo 找到
 - 它里面引用的模型路径没错
 
-## 8.2 如果你的机器人不在默认路径里
+## 8.2 如果机器人不在默认路径里
 
 就改这两个值：
 
 ```python
-EXTERNAL_ASSET_PATH = r"D:\your_assets"
-EXTERNAL_ROBOT_CONFIGS_PATH = r"D:\your_robot_configs"
+EXTERNAL_ASSET_PATH = r"<ASSET_ROOT>"
+EXTERNAL_ROBOT_CONFIGS_PATH = r"<ROBOT_CONFIG_ROOT>"
 ```
 
 这适合：
 
-- 你自己的 URDF / USD / mesh 不放在默认仓库资产目录里
+- 自定义 URDF / USD / mesh 不放在默认仓库资产目录里
 
 ## 8.3 小白最容易踩的坑
 
@@ -314,7 +314,7 @@ cuRobo 必须明确拿到一份 world 数据。
 
 ---
 
-## 10. 第五步学会保存你的 stage
+## 10. 第五步：学会保存 stage
 
 小白做到这一步以后，经常会问：
 
@@ -332,7 +332,7 @@ cuRobo 必须明确拿到一份 world 数据。
 
 保存成一个 `.usd` 文件。
 
-## 10.2 你要理解的一点
+## 10.2 需要理解的一点
 
 保存 stage 保存的是：
 
@@ -362,7 +362,7 @@ cuRobo 必须明确拿到一份 world 数据。
 
 适合：
 
-- 你已经有比较稳定的 GUI 场景
+- 当前已经有比较稳定的 GUI 场景
 
 对小白的建议是：
 
@@ -381,7 +381,7 @@ cuRobo 必须明确拿到一份 world 数据。
 
 这叫“单次规划脚本”。
 
-后面如果你要做抓取、搬运、堆叠，你需要升级成“任务脚本”。
+后面如果需要做抓取、搬运、堆叠，需要升级成“任务脚本”。
 
 一个任务脚本通常会多出下面这些结构：
 
@@ -407,12 +407,12 @@ cuRobo 必须明确拿到一份 world 数据。
 更稳的路线是：
 
 1. 先把 `gui_in_app_custom_scene_template.py` 改熟
-2. 再把它复制成你自己的任务模板
+2. 再把它复制成自定义任务模板
 3. 最后参考 `simple_stacking.py` 加状态机
 
 ---
 
-## 12. 推荐你的实际开发节奏
+## 12. 推荐开发节奏
 
 这是我最推荐的小白节奏。
 
@@ -451,7 +451,7 @@ cuRobo 必须明确拿到一份 world 数据。
 1. GUI 里是否看到了正确的场景
 2. cuRobo 是否还在 Console 里打印 `planning success`
 
-## 12.4 第四步：开始做“你自己的脚本副本”
+## 12.4 第四步：开始做“自定义脚本副本”
 
 不要永远直接改模板原件。
 
@@ -464,7 +464,7 @@ cuRobo 必须明确拿到一份 world 数据。
 
 ---
 
-## 13. 我建议你现在就按这个顺序继续走
+## 13. 建议现在就按这个顺序继续走
 
 ### 今天先做
 
@@ -482,7 +482,7 @@ cuRobo 必须明确拿到一份 world 数据。
 
 ### 再然后做
 
-1. 把 `ROBOT_CFG_NAME` 换成你的机器人
+1. 把 `ROBOT_CFG_NAME` 换成机器人
 2. 如果需要，设置：
    - `EXTERNAL_ASSET_PATH`
    - `EXTERNAL_ROBOT_CONFIGS_PATH`
@@ -490,8 +490,8 @@ cuRobo 必须明确拿到一份 world 数据。
 ### 最后做
 
 1. 复制这个脚本
-2. 加入自己的抓取逻辑
-3. 慢慢演进成自己的任务脚本
+2. 加入自定义抓取逻辑
+3. 慢慢演进成自定义任务脚本
 
 ---
 
@@ -527,7 +527,7 @@ cuRobo 必须明确拿到一份 world 数据。
 
 三者没有对齐。
 
-不要自己重写这套逻辑。
+不建议单独重写这套逻辑。
 
 优先复用：
 

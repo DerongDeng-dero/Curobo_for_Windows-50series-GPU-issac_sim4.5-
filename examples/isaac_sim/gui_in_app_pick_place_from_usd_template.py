@@ -1,15 +1,22 @@
 """
-Beginner-friendly in-app template for loading your own USD scene and attaching
-the cuRobo pick/place state machine to it.
+Beginner-friendly in-app template for loading a user-provided USD scene and
+attaching the cuRobo pick/place state machine to it.
+适合入门的 in-app 模板：加载用户提供的 USD 场景，并接入 cuRobo 抓取/放置状态机。
 
-How to run:
-1. Start D:\isaac-sim\isaac-sim.selector.bat
+How to run / 运行方式:
+1. Start Isaac Sim from `isaac-sim.selector.bat`
+   通过 `isaac-sim.selector.bat` 启动 Isaac Sim
 2. Enter Isaac Sim Full
+   进入 Isaac Sim Full
 3. Open Window > Script Editor
+   打开 Window > Script Editor
 4. Open this file and press Run
+   打开本文件并点击 Run
 
 This script is designed for GUI-internal execution only.
-It does not create SimulationApp.
+这个脚本只适合在 GUI 内部运行。
+It does not create `SimulationApp`.
+它不会创建 `SimulationApp`。
 """
 
 import asyncio
@@ -52,57 +59,74 @@ except ImportError:
 
 # ---------------------------------------------
 # Step 1: edit this config block before running
+# 第一步：运行前先改这个配置块
 # ---------------------------------------------
 
-# Mode A:
+# Mode A / 模式 A:
 # - Leave OPEN_USD_STAGE_ON_RUN = False
-# - Manually open your scene in Isaac Sim GUI first
+#   保持 OPEN_USD_STAGE_ON_RUN = False
+# - Manually open the USD scene in Isaac Sim GUI first
+#   先在 Isaac Sim GUI 里手工打开 USD 场景
 # - Then run this script
+#   再运行这个脚本
 #
-# Mode B:
+# Mode B / 模式 B:
 # - Set OPEN_USD_STAGE_ON_RUN = True
-# - Set USD_STAGE_PATH to your .usd file
-# - The script will open that stage for you
+#   设置 OPEN_USD_STAGE_ON_RUN = True
+# - Set USD_STAGE_PATH to a `.usd` file path
+#   把 USD_STAGE_PATH 设置成 `.usd` 文件路径
+# - The script will open that stage automatically
+#   由脚本自动打开该 Stage
 OPEN_USD_STAGE_ON_RUN = False
-USD_STAGE_PATH = r"D:\isaac-sim\your_scenes\pick_place_workcell.usd"
+USD_STAGE_PATH = None
 
 ROBOT_CFG_NAME = "franka.yml"
 EXTERNAL_ASSET_PATH = None
 EXTERNAL_ROBOT_CONFIGS_PATH = None
 
-# Robot source mode:
+# Robot source mode / 机器人来源模式:
 # - "reuse_existing": attach to a robot articulation that is already in the USD stage
+#   "reuse_existing"：接管 USD 场景里已经存在的机器人 articulation
 # - "import_robot": import the robot from the YAML/URDF config at runtime
+#   "import_robot"：按 YAML/URDF 配置在运行时导入机器人
 ROBOT_SCENE_MODE = "reuse_existing"
 EXISTING_ROBOT_PRIM_PATH = "/World/Franka"
 RESET_EXISTING_ROBOT_TO_RETRACT = True
 
 # Used only when ROBOT_SCENE_MODE == "import_robot"
+# 仅在 ROBOT_SCENE_MODE == "import_robot" 时使用
 ROBOT_BASE_POSITION = [0.0, 0.0, 0.0]
 ADD_DEFAULT_GROUND_PLANE_IF_MISSING = False
 
 # Pick the root paths that contain static obstacles for cuRobo.
-# If your whole scene is under /World/scene, keep this as-is.
-# If your scene is somewhere else, edit these paths first.
+# 选择 cuRobo 读取静态障碍物的根路径。
+# If the whole scene is under /World/scene, keep this as-is.
+# 如果整个场景都在 /World/scene 下面，可以直接保持默认值。
+# If the scene is somewhere else, edit these paths first.
+# 如果场景放在别的路径下，优先修改这里。
 SCENE_COLLISION_ROOTS = ["/World/scene"]
 
-# Add extra ignore paths when your scene tree is broad, e.g. when you use
+# Add extra ignore paths when the scene tree is broad, e.g. when using
 # SCENE_COLLISION_ROOTS = ["/World"].
+# 当场景树较大时，补充额外忽略路径，例如直接从 /World 读取时。
 EXTRA_WORLD_IGNORE_PATHS = [
     "/World/task",
     "/World/task_runtime/markers",
 ]
 
-# For your own USD scene, MESH is usually the safest default.
-# Supported values: "MESH", "PRIMITIVE"
+# For a user-provided USD scene, MESH is usually the safest default.
+# 对用户提供的 USD 场景，MESH 通常是最稳妥的默认值。
+# Supported values / 支持值: "MESH", "PRIMITIVE"
 COLLISION_CHECKER = "MESH"
 
-# If the prims already exist in your USD scene, point to them here.
+# If the prims already exist in the USD scene, point to them here.
+# 如果这些 prim 已经存在于 USD 场景中，就在这里填它们的路径。
 PICK_OBJECT_PRIM_PATH = "/World/task/pick_cube"
 PICK_TARGET_PRIM_PATH = "/World/task/pick_target"
 PLACE_TARGET_PRIM_PATH = "/World/task/place_target"
 
 # Runtime helpers are created only when the prim paths above are missing.
+# 只有当上面的 prim 路径不存在时，才会创建运行时辅助物体。
 RUNTIME_PICK_OBJECT_CFG = {
     "path": "/World/task_runtime/pick_cube",
     "position": [0.46, 0.26, 0.43],
@@ -122,18 +146,23 @@ RUNTIME_PLACE_MARKER_CFG = {
     "color": [0.18, 0.75, 0.36],
 }
 
-# Optional add-on geometry if your authored USD scene is too empty for a first
+# Optional add-on geometry if the authored USD scene is too empty for a first
 # test. These boxes will be created under /World/task_runtime/scene_addons.
+# 如果 authored USD 场景过于空，可以临时添加这些几何体做首次测试。
 SCENE_ADDON_BOXES = []
 
-# State-machine behavior. The most important values to tune are:
+# State-machine behavior / 状态机行为参数。
+# The most important values to tune are / 最常需要调的参数有：
 # - pregrasp_height / grasp_height
 # - lift_height / preplace_height / place_height / retreat_height
-# - gripper_joint_names when you change the robot
+# - gripper_joint_names when the robot changes
+#   更换机器人时的 gripper_joint_names
 # - task_orientation_frame:
 #     "world" means the quaternion below is defined in world coordinates and
 #     will be converted into the robot base frame automatically
+#     "world" 表示下面的四元数定义在世界坐标系，会自动转换到机器人基座坐标系
 #     "robot" means the quaternion is already defined in the robot base frame
+#     "robot" 表示四元数已经定义在机器人基座坐标系
 STATE_MACHINE_CONFIG = {
     "gripper_joint_names": ["panda_finger_joint1", "panda_finger_joint2"],
     "gripper_open_position": 0.04,

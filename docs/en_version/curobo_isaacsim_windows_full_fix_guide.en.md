@@ -1,8 +1,8 @@
-# cuRobo for Windows + Isaac Sim Full Repair Guide
+﻿# cuRobo for Windows + Isaac Sim Full Repair Guide
 
 ## 1. Purpose
 
-This document records the full repair process that made the current Windows + Isaac Sim + cuRobo workflow usable in `D:\isaac-sim`.
+This document records the full repair process that made the current Windows + Isaac Sim + cuRobo workflow usable in `<ISAAC_SIM_ROOT>`.
 
 It covers:
 
@@ -21,8 +21,8 @@ This is not a generic note. It is the engineering record of the repair path that
 ### Environment
 
 - OS: Windows 11
-- Isaac Sim root: `D:\isaac-sim`
-- cuRobo project: `D:\isaac-sim\zzcurobo\curobo_for_windows`
+- Isaac Sim root: `<ISAAC_SIM_ROOT>`
+- cuRobo project: `<REPO_ROOT>`
 - GPU: NVIDIA GeForce RTX 5070
 - GPU capability: `sm_120`
 - CUDA toolkit / `nvcc`: `11.8`
@@ -77,7 +77,7 @@ Consequences:
 
 Fix:
 
-- overlay a newer PyTorch runtime in `D:\isaac-sim\python_packages`
+- overlay a newer PyTorch runtime in `<ISAAC_SIM_ROOT>\python_packages`
 - avoid relying on the old bundled JIT path
 
 ### 4.2 Editable install incorrectly tried to rebuild CUDA extensions locally
@@ -101,12 +101,12 @@ This caused import mismatches inside the full app path.
 
 Fix:
 
-- route `torch` through `D:\isaac-sim\python_packages`
+- route `torch` through `<ISAAC_SIM_ROOT>\python_packages`
 - keep Isaac Sim bundled `numpy` and `PIL` preferred when needed
 
 Implemented in:
 
-- `D:\isaac-sim\site\sitecustomize.py`
+- `<ISAAC_SIM_ROOT>\site\sitecustomize.py`
 
 ### 4.4 NVRTC / `torch.jit` paths did not support `sm_120`
 
@@ -174,7 +174,7 @@ Implemented in:
 
 ### Installation and environment layer
 
-- `D:\isaac-sim\site\sitecustomize.py`
+- `<ISAAC_SIM_ROOT>\site\sitecustomize.py`
 - [`isaacsim_python.bat`](../../isaacsim_python.bat)
 - [`install_in_isaacsim.bat`](../../install_in_isaacsim.bat)
 - [`verify_isaacsim_integration.bat`](../../verify_isaacsim_integration.bat)
@@ -252,7 +252,7 @@ This was the critical productization step:
 ### Reinstall or repair cuRobo
 
 ```powershell
-cd D:\isaac-sim\zzcurobo\curobo_for_windows
+cd <REPO_ROOT>
 .\install_in_isaacsim.bat
 ```
 

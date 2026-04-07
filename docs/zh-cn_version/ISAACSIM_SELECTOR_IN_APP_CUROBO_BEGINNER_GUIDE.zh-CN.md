@@ -1,6 +1,6 @@
 ﻿# Isaac Sim 正常启动并在软件内使用 cuRobo 的小白完整指南
 
-## 1. 先回答你的核心问题
+## 1. 先回答核心问题
 
 ### 1.1 可以不可以正常通过 `isaac-sim.selector.bat` 启动，然后在软件内使用 cuRobo？
 
@@ -34,7 +34,7 @@
 
 ---
 
-## 2. 你要先理解的一个最重要概念
+## 2. 需要先理解的一个最重要概念
 
 ## 2.1 Isaac Sim + cuRobo 脚本其实分两类
 
@@ -60,7 +60,7 @@
 或者：
 
 ```powershell
-D:\isaac-sim\isaac-sim.bat --exec D:\isaac-sim\zzcurobo\curobo_for_windows\examples\isaac_sim\motion_gen_reacher.py
+<ISAAC_SIM_ROOT>\isaac-sim.bat --exec <REPO_ROOT>\examples\isaac_sim\motion_gen_reacher.py
 ```
 
 ### 第二类：in-app 脚本
@@ -79,7 +79,7 @@ D:\isaac-sim\isaac-sim.bat --exec D:\isaac-sim\zzcurobo\curobo_for_windows\examp
 
 这类脚本适合这样用：
 
-1. 先双击或运行 `D:\isaac-sim\isaac-sim.selector.bat`
+1. 先双击或运行 `<ISAAC_SIM_ROOT>\isaac-sim.selector.bat`
 2. 在选择器里进入 `Isaac Sim Full`
 3. 打开 `Window > Script Editor`
 4. 载入脚本并执行
@@ -95,17 +95,17 @@ D:\isaac-sim\isaac-sim.bat --exec D:\isaac-sim\zzcurobo\curobo_for_windows\examp
 1. [`isaac-sim.selector.bat`](../../../../isaac-sim.selector.bat)
    - 会调用 [`setup_python_env.bat`](../../../../setup_python_env.bat)
 2. [`setup_python_env.bat`](../../../../setup_python_env.bat)
-   - 会把 `D:\isaac-sim\site` 放进 Python extra path
+   - 会把 `<ISAAC_SIM_ROOT>\site` 放进 Python extra path
 3. [`site/sitecustomize.py`](../../../../site/sitecustomize.py)
    - 会继续把 `python_packages` 挂进解释器路径
    - 还会处理 `numpy` / `PIL` 的优先级
-4. 你已经通过：
+4. 当前已经通过：
    - [`install_in_isaacsim.bat`](../../install_in_isaacsim.bat)
    - 把 cuRobo 安装进这套 Isaac Sim Python 环境
 
 所以结论是：
 
-- **只要你从这份 `D:\isaac-sim` 里的启动器启动**
+- **只要你从这份 `<ISAAC_SIM_ROOT>` 里的启动器启动**
 - **并且之前已经安装好 cuRobo**
 
 那么通过 selector 启动后的 GUI，理论上就应该能导入 `curobo`
@@ -119,12 +119,12 @@ D:\isaac-sim\isaac-sim.bat --exec D:\isaac-sim\zzcurobo\curobo_for_windows\examp
 适合：
 
 - 你刚装好环境
-- 你想先确认有没有坏
+- 目标是先确认是否有损坏
 
 命令：
 
 ```powershell
-cd D:\isaac-sim\zzcurobo\curobo_for_windows
+cd <REPO_ROOT>
 .\verify_isaacsim_integration.bat
 ```
 
@@ -137,13 +137,13 @@ cd D:\isaac-sim\zzcurobo\curobo_for_windows
 
 适合：
 
-- 你想快速进入正式示例
+- 目标是快速进入正式示例
 - 不想手动打开 Script Editor
 
 命令：
 
 ```powershell
-cd D:\isaac-sim\zzcurobo\curobo_for_windows
+cd <REPO_ROOT>
 .\run_isaacsim_curobo_demo.bat
 ```
 
@@ -155,8 +155,8 @@ cd D:\isaac-sim\zzcurobo\curobo_for_windows
 
 适合：
 
-- 你想按正常 GUI 工作流操作
-- 你想边看界面边改脚本
+- 目标是按正常 GUI 工作流操作
+- 目标是边看界面边改脚本
 - 你想一点点搭场景，而不是全自动跑完
 
 这就是本篇文档重点讲的方式。
@@ -170,7 +170,7 @@ cd D:\isaac-sim\zzcurobo\curobo_for_windows
 ## 5.1 安装 / 补装
 
 ```powershell
-cd D:\isaac-sim\zzcurobo\curobo_for_windows
+cd <REPO_ROOT>
 .\install_in_isaacsim.bat
 ```
 
@@ -199,7 +199,7 @@ Smoke test passed.
 运行：
 
 ```powershell
-D:\isaac-sim\isaac-sim.selector.bat
+<ISAAC_SIM_ROOT>\isaac-sim.selector.bat
 ```
 
 或者在资源管理器里双击它。
@@ -281,7 +281,7 @@ print("python path count:", len(sys.path))
 
 点击运行。
 
-## 8.2 你应该看到什么
+## 8.2 预期现象
 
 理想情况：
 
@@ -296,7 +296,7 @@ print("python path count:", len(sys.path))
 那通常说明：
 
 1. 你没有先运行 `install_in_isaacsim.bat`
-2. 你不是从这份 `D:\isaac-sim` 的启动器进入的
+2. 你不是从这份 `<ISAAC_SIM_ROOT>` 的启动器进入的
 3. 当前环境被别的 Python 路径污染了
 
 ---
@@ -329,7 +329,7 @@ print("python path count:", len(sys.path))
 1. 打开 `Window > Script Editor`
 2. 选择 `Open`
 3. 打开文件：
-   - `D:\isaac-sim\zzcurobo\curobo_for_windows\examples\isaac_sim\gui_in_app_motion_gen_beginner.py`
+   - `<REPO_ROOT>\examples\isaac_sim\gui_in_app_motion_gen_beginner.py`
 4. 点击运行
 
 ## 9.3 这个脚本会帮你做什么
@@ -351,7 +351,7 @@ print("python path count:", len(sys.path))
 
 ## 10. 这一步跑通后，你在界面里应该看到什么
 
-你应该能看到：
+预期现象：
 
 - 一个 Franka 机械臂
 - 一个红色目标块
@@ -370,11 +370,11 @@ IN_APP_BEGINNER: trajectory playback finished
 
 ---
 
-## 11. 跑通以后，怎么继续搭建你自己的仿真场景
+## 11. 跑通以后，怎么继续搭建仿真场景
 
 下面按“小白能理解”的方式讲。
 
-## 11.1 你要搭一个 cuRobo 仿真场景，本质上就是 6 件事
+## 11.1 需要搭一个 cuRobo 仿真场景，本质上就是 6 件事
 
 1. 启动 Isaac Sim
 2. 创建或加载场景
@@ -411,11 +411,11 @@ IN_APP_BEGINNER: trajectory playback finished
 
 - `ROBOT_CFG_NAME = "franka.yml"`
 
-改成你自己的 robot yaml。
+改成自定义 robot yaml。
 
 前提是：
 
-- 你的 robot yaml 已经存在
+- robot yaml 已经存在
 - 它引用的 URDF / USD / mesh 路径都是对的
 
 ## 12.2 改目标
@@ -448,7 +448,7 @@ stage_world = WorldConfig(
 )
 ```
 
-你可以改：
+可以改：
 
 - `pose`
 - `dims`
@@ -485,7 +485,7 @@ stage_world = WorldConfig(
 5. 调 `motion_gen.update_world(...)`
 6. 再规划
 
-## 13.2 你要理解的一点
+## 13.2 需要理解的一点
 
 cuRobo 不会“自动知道 GUI 里有什么东西”。
 
@@ -537,11 +537,11 @@ cuRobo 不会“自动知道 GUI 里有什么东西”。
 
 ---
 
-## 15. 继续搭建场景时，我建议你的目录和脚本怎么组织
+## 15. 继续搭建场景时，建议的目录和脚本怎么组织
 
 ## 15.1 最推荐的方式
 
-把你自己的脚本分成两类：
+把自定义脚本分成两类：
 
 ### A. in-app 脚本
 
@@ -585,7 +585,7 @@ cuRobo 不会“自动知道 GUI 里有什么东西”。
 
 ---
 
-## 16. 推荐你的实际学习顺序
+## 16. 推荐学习顺序
 
 按照下面顺序走，最稳：
 
@@ -599,7 +599,7 @@ cuRobo 不会“自动知道 GUI 里有什么东西”。
 4. 在 Script Editor 里跑：
    - [`gui_in_app_motion_gen_beginner.py`](../../examples/isaac_sim/gui_in_app_motion_gen_beginner.py)
 5. 改目标位置、障碍物尺寸，再重复运行
-6. 再开始改成你自己的 robot / scene / task
+6. 再开始改成自定义 robot / scene / task
 
 ---
 
@@ -615,7 +615,7 @@ cuRobo 不会“自动知道 GUI 里有什么东西”。
 做法：
 
 ```powershell
-cd D:\isaac-sim\zzcurobo\curobo_for_windows
+cd <REPO_ROOT>
 .\install_in_isaacsim.bat
 .\verify_isaacsim_integration.bat
 ```
@@ -670,7 +670,7 @@ cd D:\isaac-sim\zzcurobo\curobo_for_windows
 
 ## 18. 你现在最推荐怎么做
 
-如果你是小白，我建议你从今天开始按这个节奏来：
+如果你是小白，建议从今天开始按这个节奏来：
 
 ### 第一天
 
@@ -688,7 +688,7 @@ cd D:\isaac-sim\zzcurobo\curobo_for_windows
 
 ### 第三天
 
-- 把 Franka 替换成你的机器人
+- 把 Franka 替换成目标机器人
 - 保留同样的 in-app 架构
 
 ### 第四天以后
@@ -703,7 +703,7 @@ cd D:\isaac-sim\zzcurobo\curobo_for_windows
 
 - **可以正常通过 `isaac-sim.selector.bat` 启动，然后在软件里使用 cuRobo。**
 
-但前提是你要分清：
+但前提是需要分清：
 
 - `motion_gen_reacher.py` 这种是 standalone
 - `gui_in_app_motion_gen_beginner.py` 这种才是适合 GUI 内执行的 in-app 脚本

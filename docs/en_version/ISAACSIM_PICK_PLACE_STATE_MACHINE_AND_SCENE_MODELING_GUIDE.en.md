@@ -1,4 +1,4 @@
-# Isaac Sim + cuRobo Pick/Place State Machine and Scene Modeling Guide
+﻿# Isaac Sim + cuRobo Pick/Place State Machine and Scene Modeling Guide
 
 ## 1. What this guide is for
 
@@ -47,7 +47,7 @@ The console logs make the state transitions explicit.
 ### 3.1 Start Isaac Sim
 
 ```powershell
-D:\isaac-sim\isaac-sim.selector.bat
+<ISAAC_SIM_ROOT>\isaac-sim.selector.bat
 ```
 
 Enter:
@@ -68,9 +68,9 @@ Open:
 
 Press `Run`.
 
-## 4. What you should see
+## 4. Expected result
 
-You should see:
+Expected result:
 
 - a robot
 - a table
@@ -93,7 +93,7 @@ Then the robot should:
 
 ### 5.1 The top configuration block
 
-This is your parameter panel.
+This is the parameter panel.
 
 Most common edits happen here:
 
@@ -188,7 +188,7 @@ Practical beginner rule:
 
 In the template, `scale` is the box size factor in each axis.
 
-You can think of it as:
+A practical way to view it is:
 
 - x size
 - y size
@@ -200,7 +200,7 @@ You can think of it as:
 2. then change scales
 3. only then add more objects
 
-## 8. Scene modeling guidance: how to judge whether your layout is reasonable
+## 8. Scene modeling guidance: how to judge whether the layout is reasonable
 
 At minimum, check these four things:
 
@@ -247,7 +247,7 @@ GRIPPER_OPEN_POSITION = 0.04
 GRIPPER_CLOSED_POSITION = 0.0
 ```
 
-If you change the robot, you usually need to change all of these together:
+When the robot changes, these settings usually need to change together:
 
 1. `ROBOT_CFG_NAME`
 2. `GRIPPER_JOINT_NAMES`
@@ -280,7 +280,7 @@ before adding hard grasp physics.
 
 After this template works reliably:
 
-1. move to your own USD scene
+1. move to a user-provided USD scene
 2. keep the same task structure
 3. only then add more realistic grasp physics
 

@@ -1,16 +1,16 @@
-﻿# Isaac Sim + cuRobo：加载自己 USD 场景并接入抓取 / 放置状态机指南
+﻿# Isaac Sim + cuRobo：加载用户提供的 USD 场景并接入抓取 / 放置状态机指南
 
 ## 1. 这份文档解决什么问题
 
 前面那份状态机模板：
 
-- 会自己搭一个教学用场景
+- 会自动搭一个教学用场景
 - 适合先学抓取 / 放置流程
 
 但你真正长期会遇到的下一步是：
 
-- 你已经有自己的 USD 场景
-- 你想在 Isaac Sim 里正常打开它
+- 当前已经有用户提供的 USD 场景
+- 目标是在 Isaac Sim 里正常打开它
 - 然后把 cuRobo 的抓取 / 放置状态机接进去
 
 这份文档解决的就是这个问题。
@@ -21,30 +21,30 @@
 
 它的定位非常明确：
 
-- 先加载你自己的环境 USD 场景
+- 先加载用户提供的环境 USD 场景
 - 再复用场景里已有机器人 articulation，或者按需运行时注入机器人
 - 再把 pick-place 状态机接上去
 
 这份脚本目前的默认路线是：
 
-- **复用你自己的环境场景**
-- **优先复用你自己的机器人 articulation**
+- **复用用户提供的环境场景**
+- **优先复用自定义机器人 articulation**
 - **缺失任务辅助物体时，再由脚本补 runtime helper**
 
 这样做的好处是：
 
-- 如果你的工位 USD 里已经有机器人，就不用重复导入第二台机器人
-- 如果你的场景还没整理好，也还能退回到运行时注入模式
+- 如果工位 USD 里已经有机器人，就不用重复导入第二台机器人
+- 如果场景还没整理好，也还能退回到运行时注入模式
 - 对初学者和长期维护两种工作流都兼容
 
 ---
 
 ## 2. 你会得到什么
 
-运行这个模板后，你可以做到：
+运行这个模板后，可以做到：
 
 1. 用 `selector.bat` 正常启动 Isaac Sim Full
-2. 打开你自己的 USD 场景
+2. 打开用户提供的 USD 场景
 3. 在 `Script Editor` 里运行这个脚本
 4. 让脚本读取你指定的场景障碍物 root
 5. 复用场景里已有机器人 articulation，或者按需导入机器人
@@ -63,14 +63,14 @@
 
 ## 3. 这份脚本的两个使用模式
 
-## 3.1 模式 A：你先在 GUI 里打开自己的场景
+## 3.1 模式 A：先在 GUI 里打开自定义场景
 
 这是最推荐的模式。
 
 步骤是：
 
 1. 手工打开 Isaac Sim GUI
-2. 手工打开你自己的 USD 场景
+2. 手工打开用户提供的 USD 场景
 3. 再运行脚本
 
 这时你在脚本里保持：
@@ -81,19 +81,19 @@ OPEN_USD_STAGE_ON_RUN = False
 
 好处是：
 
-- 你可以先看清场景长什么样
-- 你可以先在 GUI 里检查 prim 路径
-- 你可以边看 Stage 树边改脚本配置
+- 可以先看清场景长什么样
+- 可以先在 GUI 里检查 prim 路径
+- 可以边看 Stage 树边改脚本配置
 
 对小白最友好。
 
 ## 3.2 模式 B：让脚本主动打开某个 USD 文件
 
-如果你已经很明确要加载哪个文件，也可以这样：
+如果已经明确要加载哪个文件，也可以这样：
 
 ```python
 OPEN_USD_STAGE_ON_RUN = True
-USD_STAGE_PATH = r"D:\isaac-sim\your_scenes\pick_place_workcell.usd"
+USD_STAGE_PATH = r"<ISAAC_SIM_ROOT>\your_scenes\pick_place_workcell.usd"
 ```
 
 这样脚本会自动打开这个 USD。
@@ -129,14 +129,14 @@ USD_STAGE_PATH = r"D:\isaac-sim\your_scenes\pick_place_workcell.usd"
 
 也就是说：
 
-- **环境尽量用你自己的 USD**
+- **环境尽量使用用户提供的 USD**
 - **任务辅助物体可以先让脚本补齐**
 
 这是一个非常实用的过渡方案。
 
 ---
 
-## 5. 推荐你把自己的 USD 场景整理成什么结构
+## 5. 推荐你把用户提供的 USD 场景整理成什么结构
 
 最推荐的第一版结构是：
 
@@ -167,7 +167,7 @@ USD_STAGE_PATH = r"D:\isaac-sim\your_scenes\pick_place_workcell.usd"
 - 哪些东西应该给 cuRobo 当障碍物
 - 哪些东西只是任务目标点
 
-如果你自己的场景树不是这个结构，也没关系。
+如果自定义场景树不是这个结构，也没关系。
 
 你只要改脚本里这些配置：
 
@@ -187,7 +187,7 @@ USD_STAGE_PATH = r"D:\isaac-sim\your_scenes\pick_place_workcell.usd"
 运行：
 
 ```powershell
-D:\isaac-sim\isaac-sim.selector.bat
+<ISAAC_SIM_ROOT>\isaac-sim.selector.bat
 ```
 
 进入：
@@ -196,17 +196,17 @@ D:\isaac-sim\isaac-sim.selector.bat
 
 ---
 
-## 6.2 第二步：打开自己的 USD 场景
+## 6.2 第二步：打开用户提供的 USD 场景
 
 如果你用模式 A：
 
 1. 在 GUI 里点击 `File > Open`
-2. 选择你自己的 `.usd` 文件
+2. 选择目标 `.usd` 文件
 3. 等场景加载完
 
 这一步的目标是：
 
-- 让你在界面里先看到自己的桌子、障碍物、任务区
+- 先在界面里看到桌子、障碍物、任务区
 
 ---
 
@@ -248,7 +248,7 @@ D:\isaac-sim\isaac-sim.selector.bat
 
 ---
 
-## 6.4 第四步：如果你的场景还没有 pick/place target，先在 GUI 里建简单 marker
+## 6.4 第四步：如果场景还没有 pick/place target，先在 GUI 里建简单 marker
 
 最推荐的做法是：
 
@@ -282,7 +282,7 @@ D:\isaac-sim\isaac-sim.selector.bat
 
 位置：
 
-- `D:\isaac-sim\zzcurobo\curobo_for_windows\examples\isaac_sim\gui_in_app_pick_place_from_usd_template.py`
+- `<REPO_ROOT>\examples\isaac_sim\gui_in_app_pick_place_from_usd_template.py`
 
 ---
 
@@ -294,20 +294,20 @@ D:\isaac-sim\isaac-sim.selector.bat
 
 ```python
 OPEN_USD_STAGE_ON_RUN = False
-USD_STAGE_PATH = r"D:\isaac-sim\your_scenes\pick_place_workcell.usd"
+USD_STAGE_PATH = r"<ISAAC_SIM_ROOT>\your_scenes\pick_place_workcell.usd"
 ```
 
-如果你已经在 GUI 里手工打开场景，就用：
+如果已经在 GUI 里手工打开场景，就用：
 
 ```python
 OPEN_USD_STAGE_ON_RUN = False
 ```
 
-如果要脚本自己打开，就改成：
+如果要由脚本自动打开，就改成：
 
 ```python
 OPEN_USD_STAGE_ON_RUN = True
-USD_STAGE_PATH = r"你的真实路径"
+USD_STAGE_PATH = r"<USD_SCENE_PATH>"
 ```
 
 ### cuRobo 读取障碍物的 root
@@ -316,7 +316,7 @@ USD_STAGE_PATH = r"你的真实路径"
 SCENE_COLLISION_ROOTS = ["/World/scene"]
 ```
 
-如果你的静态障碍物不在 `/World/scene`，这里必须改。
+如果静态障碍物不在 `/World/scene`，这里必须改。
 
 这是最容易出错的地方之一。
 
@@ -328,7 +328,7 @@ PICK_TARGET_PRIM_PATH = "/World/task/pick_target"
 PLACE_TARGET_PRIM_PATH = "/World/task/place_target"
 ```
 
-如果这些 prim 在你的场景里路径不同，这里也必须改。
+如果这些 prim 在场景里路径不同，这里也必须改。
 
 ### 机器人
 
@@ -344,8 +344,8 @@ ROBOT_BASE_POSITION = [0.0, 0.0, 0.0]
 
 更具体地说：
 
-- 如果你的 USD 里已经有机器人，优先用 `reuse_existing`
-- 如果你的 USD 里还没有机器人，才用 `import_robot`
+- 如果 USD 里已经有机器人，优先用 `reuse_existing`
+- 如果 USD 里还没有机器人，才用 `import_robot`
 - `ROBOT_BASE_POSITION` 只在 `import_robot` 模式下生效
 
 最推荐的小白第一版配置通常是：
@@ -369,7 +369,7 @@ STATE_MACHINE_CONFIG = {
 }
 ```
 
-如果你的桌面更高、物体更大、目标更深，这几项就要调。
+如果桌面更高、物体更大、目标更深，这几项就要调。
 
 ### 目标姿态坐标系
 
@@ -384,7 +384,7 @@ STATE_MACHINE_CONFIG = {
 
 - `task_orientation_frame = "world"`
 
-这样即使你的机器人底座已经摆在自己的工位里，不在世界原点，脚本也会先把目标姿态转到 robot base frame 再规划。
+这样即使机器人底座已经摆在工位里，不在世界原点，脚本也会先把目标姿态转到 robot base frame 再规划。
 
 ---
 
@@ -396,7 +396,7 @@ STATE_MACHINE_CONFIG = {
 
 ## 6.8 第八步：看 Console 输出
 
-你应该至少看到下面这些类型的日志：
+至少应当看到下面这些类型的日志：
 
 ```text
 USD_PICK_PLACE_TEMPLATE: using the stage that is already open in the GUI
@@ -443,7 +443,7 @@ SCENE_COLLISION_ROOTS = ["/World/scene"]
 
 - 让 cuRobo 从 `/World/scene` 下面提取障碍物
 
-如果你的环境是：
+如果环境是：
 
 ```text
 /World/factory
@@ -458,7 +458,7 @@ SCENE_COLLISION_ROOTS = ["/World/scene"]
 SCENE_COLLISION_ROOTS = ["/World/factory"]
 ```
 
-如果你的场景散得比较开，也可以填多个 root：
+如果场景散得比较开，也可以填多个 root：
 
 ```python
 SCENE_COLLISION_ROOTS = [
@@ -497,7 +497,7 @@ EXTRA_WORLD_IGNORE_PATHS = [
 
 ## 7.3 `PICK_OBJECT_PRIM_PATH`
 
-这表示你要抓的对象 prim。
+这表示需要抓的对象 prim。
 
 建议你把它设置成：
 
@@ -525,7 +525,7 @@ EXTRA_WORLD_IGNORE_PATHS = [
 - 路径稳定
 - 你一眼就能在 Stage 树里找到
 
-如果你长期要做任务脚本，我建议你在自己 USD 场景里长期保留它们。
+如果长期要做任务脚本，建议在用户提供的 USD 场景里长期保留它们。
 
 ---
 
@@ -539,10 +539,10 @@ COLLISION_CHECKER = "MESH"
 
 原因很简单：
 
-- 你自己的 USD 场景里通常不只是几个方块
+- 用户提供的 USD 场景里通常不只是几个方块
 - 很多时候会有 mesh
 
-如果你的场景特别简单，几乎全是盒子，也可以改成：
+如果场景特别简单，几乎全是盒子，也可以改成：
 
 ```python
 COLLISION_CHECKER = "PRIMITIVE"
@@ -556,7 +556,7 @@ COLLISION_CHECKER = "PRIMITIVE"
 
 这是这次升级后最重要的新配置之一。
 
-如果你的 USD 里已经有机器人，推荐：
+如果 USD 里已经有机器人，推荐：
 
 ```python
 ROBOT_SCENE_MODE = "reuse_existing"
@@ -594,7 +594,7 @@ ROBOT_BASE_POSITION = [0.0, 0.0, 0.0]
 - 你在脚本里写的末端目标姿态是按世界坐标系理解的
 - 脚本会自动把它转换到 robot base frame
 
-这对“机器人底座已经放在你自己的工位里，而且不在原点”的场景尤其重要。
+这对“机器人底座已经放在工作单元里，而且不在原点”的场景尤其重要。
 
 如果你已经完全按机器人基座坐标系来思考，也可以改成：
 
@@ -659,7 +659,7 @@ ROBOT_BASE_POSITION = [0.0, 0.0, 0.0]
 
 这是很实际的一条建议。
 
-如果你自己的 USD 场景来自：
+如果用户提供的 USD 场景来自：
 
 - CAD
 - 工厂资源包
@@ -780,7 +780,7 @@ ROBOT_BASE_POSITION = [0.0, 0.0, 0.0]
 
 ## 9.1 你已经把场景整理成推荐结构
 
-如果你的场景就是：
+如果场景就是：
 
 ```text
 /World/scene
@@ -805,9 +805,9 @@ PLACE_TARGET_PRIM_PATH = "/World/task/place_target"
 
 ---
 
-## 9.2 你的场景里没有 marker
+## 9.2 场景里没有 marker
 
-那你可以先这样用：
+那可以先这样用：
 
 ```python
 PICK_TARGET_PRIM_PATH = "/World/task/pick_target"
@@ -825,9 +825,9 @@ PLACE_TARGET_PRIM_PATH = "/World/task/place_target"
 
 ---
 
-## 9.3 你的场景里已经有机器人，但你不想重置到 retract
+## 9.3 场景里已经有机器人，但你不想重置到 retract
 
-那你可以这样：
+那可以这样：
 
 ```python
 ROBOT_SCENE_MODE = "reuse_existing"
@@ -839,7 +839,7 @@ RESET_EXISTING_ROBOT_TO_RETRACT = False
 
 - 你想保留场景里机器人当前姿态
 - 你正在做 GUI 内交互调试
-- 你先想观察当前关节状态下能不能直接规划
+- 先想观察当前关节状态下能不能直接规划
 
 但我仍然建议第一轮排错先用：
 
@@ -847,7 +847,7 @@ RESET_EXISTING_ROBOT_TO_RETRACT = False
 
 ---
 
-## 9.4 你的场景树比较乱，只能先从 `/World` 读
+## 9.4 场景树比较乱，只能先从 `/World` 读
 
 这种情况下可以临时这么做：
 
@@ -863,7 +863,7 @@ EXTRA_WORLD_IGNORE_PATHS = [
 
 更好的长期方案是：
 
-- 重新整理你的场景树
+- 重新整理场景树
 - 或者至少给静态环境单独做一个 root
 
 ---
@@ -890,7 +890,7 @@ EXTRA_WORLD_IGNORE_PATHS = [
 
 然后看：
 
-- 你的桌子高度是不是过高
+- 桌子高度是不是过高
 - retract 姿态是不是压在桌面里
 
 ---
@@ -935,7 +935,7 @@ EXTRA_WORLD_IGNORE_PATHS = [
 先检查：
 
 - `STATE_MACHINE_CONFIG["task_orientation_frame"]` 是否还在默认的 `"world"`
-- 你的机器人底座是否是常见的桌面工位摆放
+- 机器人底座是否是常见的桌面工位摆放
 - `EXISTING_ROBOT_PRIM_PATH` 是否真的指向机器人 root，而不是随便某个 mesh 节点
 
 如果你已经明确按机器人基座坐标系定义姿态了，再考虑把：
@@ -952,15 +952,15 @@ EXTRA_WORLD_IGNORE_PATHS = [
 
 把这份模板跑通以后，你下一步最值得做的是下面 3 件事：
 
-1. 把自己的场景整理成稳定的 root 结构
-2. 把 pick/place target 固化到自己的 USD 里
+1. 把自定义场景整理成稳定的 root 结构
+2. 把 pick/place target 固化到用户提供的 USD 里
 3. 再逐步把“教学型附着”升级成更真实的物理抓取
 
 不要一开始就把所有复杂度同时拉满。
 
 更稳的顺序是：
 
-1. 先跑通自己的 USD 场景
+1. 先跑通用户提供的 USD 场景
 2. 再让状态机稳定
 3. 再加更复杂的建模、感知和物理
 

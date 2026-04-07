@@ -18,7 +18,7 @@
 - GUI 内 in-app 使用
 - 自定义场景继续搭建
 - 抓取 / 放置状态机
-- 加载自己 USD 场景并接入状态机
+- 加载用户提供的 USD 场景并接入状态机
 - 完整修复记录与维护总结
 
 文档一多，就会出现两个很常见的问题：
@@ -52,11 +52,11 @@
 
 (8) [`curobo_isaacsim_windows_full_fix_guide.md`](./curobo_isaacsim_windows_full_fix_guide.zh-CN.md)
 
-如果你不是从零开始，而是已经装好了，只想继续做 GUI 场景和任务流程，可以直接从：
+如果当前不是从零开始，而是已经装好了，只想继续做 GUI 场景和任务流程，可以直接从：
 
 - `(4)` 开始
 
-如果你已经有自己的 USD 场景，想直接接 pick-place 状态机，可以直接从：
+如果当前已经有用户提供的 USD 场景，想直接接 pick-place 状态机，可以直接从：
 
 - `(7)` 开始
 
@@ -108,7 +108,7 @@
 
 ---
 
-## 3.4 路线 D：已经有自己的 USD 场景，想接真实工作场景
+## 3.4 路线 D：已经有用户提供的 USD 场景，想接真实工作场景
 
 按这个顺序：
 
@@ -116,8 +116,8 @@
 
 适合：
 
-- 自己已经有桌子、工位、障碍物、料箱等 USD 资产
-- 想把状态机接到自己的场景里
+- 当前已经有桌子、工位、障碍物、料箱等 USD 资产
+- 想把状态机接到自定义场景里
 
 ---
 
@@ -129,8 +129,8 @@
 
 适合：
 
-- 你需要知道这套交付里到底改了什么
-- 你准备维护、升级、迁移或排障
+- 需要知道这套交付里到底改了什么
+- 当前准备维护、升级、迁移或排障
 
 ---
 
@@ -152,7 +152,7 @@
 
 - 第一次打开仓库时先看
 
-看完后你应该知道：
+看完后应当知道：
 
 - 当前有哪些主文档
 - 安装和 demo 的最短入口是什么
@@ -176,7 +176,7 @@
 - 你还没有装好环境时
 - 你还没跑通最小 smoke test 时
 
-看完后你应该能完成：
+看完后应当能完成：
 
 - `install_in_isaacsim.bat`
 - `verify_isaacsim_integration.bat`
@@ -201,7 +201,7 @@
 - 想知道仓库里每个关键脚本和文档有什么作用时
 - 准备长期维护时
 
-看完后你应该知道：
+看完后应当知道：
 
 - 整套交付由哪些文件组成
 - 哪个脚本负责安装、验证、demo、GUI 教学、正式入口
@@ -222,10 +222,10 @@
 
 什么时候看：
 
-- 你已经安装好
-- 你想在正常 GUI 里使用 cuRobo，而不是只会命令行启动
+- 当前已经安装好
+- 目标是在正常 GUI 里使用 cuRobo，而不是只通过命令行启动
 
-看完后你应该能完成：
+看完后应当能完成：
 
 - 在 GUI 内跑通最基础的 in-app 脚本
 
@@ -242,16 +242,16 @@
 - 讲如何换机器人
 - 讲如何搭桌子和障碍物
 - 讲如何让 cuRobo world 和 GUI 场景同步
-- 讲如何从“单次规划”继续演进成你自己的场景模板
+- 讲如何从“单次规划”继续演进成自定义场景模板
 
 什么时候看：
 
-- 你已经能在 GUI 里跑 beginner 脚本
-- 你要开始搭自己的桌面、障碍物、目标点
+- 当前已经能在 GUI 里跑 beginner 脚本
+- 需要开始搭建自定义桌面、障碍物、目标点
 
-看完后你应该能完成：
+看完后应当能完成：
 
-- 在 GUI 里搭出自己的基础工作台场景
+- 在 GUI 里搭出基础工作台场景
 
 ---
 
@@ -269,10 +269,10 @@
 
 什么时候看：
 
-- 你已经不满足于“单次到点规划”
-- 你要开始做任务流
+- 当前已经不满足于“单次到点规划”
+- 需要开始做任务流
 
-看完后你应该能完成：
+看完后应当能完成：
 
 - 跑通教学型 pick-place 状态机
 - 理解为什么要把 `/World/scene`、`/World/task`、`/World/markers` 分开
@@ -283,23 +283,23 @@
 
 定位：
 
-- 将自己的 USD 场景接入 pick-place 状态机的教程
+- 将用户提供的 USD 场景接入 pick-place 状态机的教程
 
 主要作用：
 
-- 讲如何加载你自己的 USD 场景
+- 讲如何加载用户提供的 USD 场景
 - 讲如何指定 cuRobo 该从哪些 root 读取障碍物
 - 讲如何把现有 pick object / pick target / place target 接入状态机
 - 讲如果场景里没有 marker，如何让脚本自动补 runtime marker
 
 什么时候看：
 
-- 你已经有自己的 USD 场景
-- 你要把之前的教学模板升级成真实工作场景模板
+- 当前已经有用户提供的 USD 场景
+- 需要把之前的教学模板升级成真实工作场景模板
 
-看完后你应该能完成：
+看完后应当能完成：
 
-- 用自己的 USD 场景驱动 pick-place 状态机
+- 用用户提供的 USD 场景驱动 pick-place 状态机
 
 ---
 
@@ -317,11 +317,11 @@
 
 什么时候看：
 
-- 你要理解为什么现在这套方案能跑
-- 你要升级 Isaac Sim、PyTorch、CUDA 或 cuRobo
-- 你要做长期维护
+- 需要理解为什么现在这套方案能跑
+- 需要升级 Isaac Sim、PyTorch、CUDA 或 cuRobo
+- 需要做长期维护
 
-看完后你应该知道：
+看完后应当知道：
 
 - 这套工程的历史修复逻辑
 - 关键兼容点和后续维护风险
@@ -330,7 +330,7 @@
 
 ## 5. 最推荐的实际使用步骤
 
-如果你现在要真正开始上手，我建议你按下面步骤执行。
+如果你现在要真正开始上手，建议按下面步骤执行。
 
 ### 第一步：先确认环境已经通
 
@@ -341,7 +341,7 @@
 执行：
 
 ```powershell
-cd D:\isaac-sim\zzcurobo\curobo_for_windows
+cd <REPO_ROOT>
 .\install_in_isaacsim.bat
 .\verify_isaacsim_integration.bat
 ```
@@ -364,7 +364,7 @@ cd D:\isaac-sim\zzcurobo\curobo_for_windows
 
 ---
 
-### 第三步：搭自己的基础工作台
+### 第三步：搭基础工作台
 
 看：
 
@@ -388,7 +388,7 @@ cd D:\isaac-sim\zzcurobo\curobo_for_windows
 
 ---
 
-### 第五步：把自己的 USD 场景接进来
+### 第五步：把用户提供的 USD 场景接进来
 
 看：
 
@@ -423,19 +423,19 @@ cd D:\isaac-sim\zzcurobo\curobo_for_windows
 
 (4) `ISAACSIM_SELECTOR_IN_APP_CUROBO_BEGINNER_GUIDE.zh-CN.md`：学会在正常 Isaac Sim GUI 里用 cuRobo。
 
-(5) `ISAACSIM_CUSTOM_SCENE_WORKFLOW_BEGINNER_GUIDE.zh-CN.md`：开始搭自己的机器人和场景。
+(5) `ISAACSIM_CUSTOM_SCENE_WORKFLOW_BEGINNER_GUIDE.zh-CN.md`：开始搭自定义机器人和场景。
 
 (6) `ISAACSIM_PICK_PLACE_STATE_MACHINE_AND_SCENE_MODELING_GUIDE.zh-CN.md`：把单次规划升级成 pick-place 状态机。
 
-(7) `ISAACSIM_USD_SCENE_PICK_PLACE_WORKFLOW_GUIDE.zh-CN.md`：把自己的 USD 场景接入状态机。
+(7) `ISAACSIM_USD_SCENE_PICK_PLACE_WORKFLOW_GUIDE.zh-CN.md`：把用户提供的 USD 场景接入状态机。
 
 (8) `curobo_isaacsim_windows_full_fix_guide.md`：需要维护、升级、排障时再深入看。
 
 ---
 
-## 7. 最后给你的最短建议
+## 7. 最后的最短建议
 
-如果你现在已经安装成功，并且下一步目标是“在自己的场景里做任务”，那最短路线就是：
+如果你现在已经安装成功，并且下一步目标是“在自定义场景里做任务”，那最短路线就是：
 
 - 先看 `(4)`
 - 再看 `(5)`

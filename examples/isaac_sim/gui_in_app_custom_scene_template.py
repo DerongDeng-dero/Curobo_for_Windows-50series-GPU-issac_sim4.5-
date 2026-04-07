@@ -1,14 +1,21 @@
 """
-Beginner-friendly in-app template for building your own Isaac Sim + cuRobo scene.
+Beginner-friendly in-app template for building a custom Isaac Sim + cuRobo scene.
+适合入门的 in-app 模板，用于搭建自定义 Isaac Sim + cuRobo 场景。
 
-How to use:
-1. Start Isaac Sim from isaac-sim.selector.bat
+How to use / 使用方式:
+1. Start Isaac Sim from `isaac-sim.selector.bat`
+   通过 `isaac-sim.selector.bat` 启动 Isaac Sim
 2. Enter Isaac Sim Full
+   进入 Isaac Sim Full
 3. Open Window > Script Editor
+   打开 Window > Script Editor
 4. Open this file and run it
+   打开本文件并运行
 
 This script is designed for GUI-internal execution only.
-It does not create SimulationApp.
+这个脚本只适合在 GUI 内部运行。
+It does not create `SimulationApp`.
+它不会创建 `SimulationApp`。
 """
 
 import asyncio
@@ -48,6 +55,7 @@ from curobo.wrap.reacher.motion_gen import MotionGen, MotionGenConfig, MotionGen
 
 # -----------------------------
 # Step 1: edit these values first
+# 第一步：先改这里的配置
 # -----------------------------
 RESET_STAGE_ON_RUN = True
 ROBOT_CFG_NAME = "franka.yml"
@@ -59,7 +67,8 @@ GOAL_QUATERNION = [1.0, 0.0, 0.0, 0.0]
 PLAYBACK_FRAME_STEP = 2
 
 # Workcell geometry for cuRobo and stage visualization.
-# `pose` format: [x, y, z, qw, qx, qy, qz]
+# cuRobo 碰撞世界和 Stage 可视化共用的工作单元几何。
+# `pose` format / `pose` 格式: [x, y, z, qw, qx, qy, qz]
 SCENE_CUBOIDS = [
     {
         "name": "table_top",
@@ -284,7 +293,10 @@ async def main() -> None:
         await _next_frame(PLAYBACK_FRAME_STEP)
 
     print("CUSTOM_TEMPLATE: trajectory playback finished", flush=True)
-    print("CUSTOM_TEMPLATE: now start modifying the config block at the top of this file", flush=True)
+    print(
+        "CUSTOM_TEMPLATE: update the config block at the top of this file and run again",
+        flush=True,
+    )
 
 
 async def _run() -> None:

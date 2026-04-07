@@ -4,7 +4,7 @@
 
 这份文档解决的是下一步问题：
 
-- 你已经会在 Isaac Sim GUI 里跑 cuRobo
+- 当前已经会在 Isaac Sim GUI 里跑 cuRobo
 - 你现在想做一个“抓取 -> 抬升 -> 搬运 -> 放置 -> 回撤”的完整流程
 - 你还希望脚本里带一点场景建模内容，而不只是一个空场景
 
@@ -69,7 +69,7 @@ STATE_MACHINE: finished with state=DONE
 ## 3.1 启动 Isaac Sim
 
 ```powershell
-D:\isaac-sim\isaac-sim.selector.bat
+<ISAAC_SIM_ROOT>\isaac-sim.selector.bat
 ```
 
 进入：
@@ -91,13 +91,13 @@ D:\isaac-sim\isaac-sim.selector.bat
 
 打开：
 
-- `D:\isaac-sim\zzcurobo\curobo_for_windows\examples\isaac_sim\gui_in_app_pick_place_state_machine_template.py`
+- `<REPO_ROOT>\examples\isaac_sim\gui_in_app_pick_place_state_machine_template.py`
 
 点击 Run。
 
 ---
 
-## 4. 你应该看到什么
+## 4. 预期现象
 
 你会看到：
 
@@ -142,7 +142,7 @@ D:\isaac-sim\isaac-sim.selector.bat
 - `PICK_MARKER_CFG`
 - `PLACE_MARKER_CFG`
 
-这一区域就是你的“参数面板”。
+这一区域就是“参数面板”。
 
 ## 5.2 场景建模区
 
@@ -209,7 +209,7 @@ D:\isaac-sim\isaac-sim.selector.bat
 
 ## 6.2 最推荐的第一版工作台结构
 
-我建议你的第一版工作台永远只保留这 4 类物体：
+建议的第一版工作台永远只保留这 4 类物体：
 
 1. 桌子
 2. 一个待抓取物体
@@ -230,7 +230,7 @@ D:\isaac-sim\isaac-sim.selector.bat
 - `position = [0.62, 0.00, 0.18]`
 - `scale = [0.95, 1.10, 0.36]`
 
-你可以把它理解成：
+可以把它理解成：
 
 - 中心在前方一点
 - 台面足够宽
@@ -309,7 +309,7 @@ D:\isaac-sim\isaac-sim.selector.bat
 
 ---
 
-## 8. 场景建模指导：怎么判断你的布局是不是合理
+## 8. 场景建模指导：怎么判断布局是否合理
 
 你至少要检查 4 件事。
 
@@ -484,8 +484,8 @@ GRIPPER_CLOSED_POSITION = 0.0
 
 好处：
 
-- 你可以决定它是否参与碰撞
-- 你可以单独处理“附着”逻辑
+- 可以决定它是否参与碰撞
+- 可以单独处理“附着”逻辑
 
 ## 13.3 `/World/markers`
 
@@ -535,7 +535,7 @@ GRIPPER_CLOSED_POSITION = 0.0
 
 ## 14.4 第四轮：改状态机顺序
 
-比如你可以新增一个状态：
+比如可以新增一个状态：
 
 - 先去观察位
 - 再去预抓取位
@@ -547,9 +547,9 @@ GRIPPER_CLOSED_POSITION = 0.0
 
 ---
 
-## 15. 如果你想把它升级成更真实的抓取
+## 15. 如果需要把它升级成更真实的抓取
 
-未来你可以继续加这些东西：
+未来可以继续加这些东西：
 
 1. 用真实动态刚体代替教学型附着
 2. 用接触或夹爪宽度判断是否抓取成功
@@ -557,7 +557,7 @@ GRIPPER_CLOSED_POSITION = 0.0
 4. 给被抓物体增加碰撞几何与质量
 5. 把放置后物体真正留在台面上
 
-但我建议你不要一步跨太大。
+但建议不要一步跨太大。
 
 先把这份模板改熟，再做升级。
 
@@ -585,7 +585,7 @@ GRIPPER_CLOSED_POSITION = 0.0
 
 不对。
 
-你要看脚本里到底是从哪里读取 obstacle 的。
+需要看脚本里到底是从哪里读取 obstacle 的。
 
 ---
 

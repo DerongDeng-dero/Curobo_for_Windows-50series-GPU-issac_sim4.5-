@@ -1,4 +1,4 @@
-# Windows + NVIDIA RTX 50-Series + Isaac Sim 4.5+ cuRobo Installation and Repair Tutorial
+﻿# Windows + NVIDIA RTX 50-Series + Isaac Sim 4.5+ cuRobo Installation and Repair Tutorial
 
 ## 1. Who this tutorial is for
 
@@ -6,9 +6,9 @@ This document is intended for users who match most of the following:
 
 - you are on Windows 10 or Windows 11
 - you are using Isaac Sim 4.5 or later
-- your GPU is a newer NVIDIA GeForce RTX 50-series card
-- you need a repository path that explicitly targets newer GPUs on Isaac Sim 4.5+
-- `pip install -e .` keeps failing and you do not want to guess your way through it
+- the GPU is a newer NVIDIA GeForce RTX 50-series card
+- a repository path that explicitly targets newer GPUs on Isaac Sim 4.5+ is needed
+- `pip install -e .` keeps failing and a deterministic repair path is preferred
 
 This repository is primarily maintained around that target combination:
 
@@ -19,8 +19,8 @@ This repository is primarily maintained around that target combination:
 This tutorial is based on a real repair and validation run in the following environment:
 
 - OS: Windows 11
-- Isaac Sim root: `D:\isaac-sim`
-- cuRobo project: `D:\isaac-sim\zzcurobo\curobo_for_windows`
+- Isaac Sim root: `<ISAAC_SIM_ROOT>`
+- cuRobo project: `<REPO_ROOT>`
 - GPU: NVIDIA GeForce RTX 5070
 - GPU capability: `sm_120`
 - Isaac Sim: `4.5.0`
@@ -131,12 +131,12 @@ In the full GUI path, finetuning could fail even when the pre-finetune trajector
 - [`isaacsim_python.bat`](../../isaacsim_python.bat)
 - [`install_in_isaacsim.bat`](../../install_in_isaacsim.bat)
 - [`verify_isaacsim_integration.bat`](../../verify_isaacsim_integration.bat)
-- `D:\isaac-sim\site\sitecustomize.py`
+- `<ISAAC_SIM_ROOT>\site\sitecustomize.py`
 
 Purpose:
 
 - expose the right Isaac Sim Python paths
-- route `torch` through `D:\isaac-sim\python_packages`
+- route `torch` through `<ISAAC_SIM_ROOT>\python_packages`
 - keep Isaac Sim bundled `numpy` and `PIL` preferred when needed
 
 ### Build layer
@@ -183,19 +183,19 @@ Purpose:
 ## 5. Recommended installation method
 
 ```powershell
-cd D:\isaac-sim\zzcurobo\curobo_for_windows
+cd <REPO_ROOT>
 .\install_in_isaacsim.bat
 .\verify_isaacsim_integration.bat
 ```
 
 If both pass, the environment is in the expected state.
 
-## 6. Manual method if you want to execute the steps yourself
+## 6. Manual method for running the steps directly
 
 ### Step 1: verify the Isaac Sim Python wrapper
 
 ```powershell
-cd D:\isaac-sim\zzcurobo\curobo_for_windows
+cd <REPO_ROOT>
 .\isaacsim_python.bat -c "import isaacsim, torch; print(torch.__version__)"
 ```
 
@@ -285,7 +285,7 @@ Use this order:
 1. install or repair with `install_in_isaacsim.bat`
 2. validate with `verify_isaacsim_integration.bat`
 3. use `run_isaacsim_curobo_demo.bat` for the formal standalone demo path
-4. use the in-app scripts when you want GUI-internal workflows
+4. use the in-app scripts for GUI-internal workflows
 
 Do not start from random direct `pip install` or random Python binaries.
 
@@ -297,14 +297,14 @@ This delivery is designed for:
 - Isaac Sim 4.5-era structure
 - the repaired `curobo_for_windows` tree in this repository
 
-If you change Isaac Sim, PyTorch, CUDA, or cuRobo native extensions, expect to revalidate the install and runtime assumptions.
+If Isaac Sim, PyTorch, CUDA, or cuRobo native extensions change, revalidate the install and runtime assumptions.
 
 ## 12. Short version for normal users
 
-If you only want the shortest practical path, do this:
+Shortest practical path:
 
 ```powershell
-cd D:\isaac-sim\zzcurobo\curobo_for_windows
+cd <REPO_ROOT>
 .\install_in_isaacsim.bat
 .\verify_isaacsim_integration.bat
 .\run_isaacsim_curobo_demo.bat

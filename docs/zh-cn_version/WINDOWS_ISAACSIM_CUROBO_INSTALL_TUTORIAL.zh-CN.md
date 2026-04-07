@@ -6,8 +6,8 @@
 
 - 你在 Windows 10/11 上使用 Isaac Sim。
 - 你使用的是 Isaac Sim 4.5 或更高版本。
-- 你的显卡比较新，比如英伟达 RTX 50 系。
-- 你需要一套明确面向新显卡 + Isaac Sim 4.5+ 的仓库路径。
+- 显卡比较新，比如英伟达 RTX 50 系。
+- 需要一套明确面向新显卡 + Isaac Sim 4.5+ 的仓库路径。
 - 你把 `curobo_for_windows` 放进 Isaac Sim 目录后，`pip install -e .` 一直报错。
 - 你不想猜，不想试错，只想照着步骤把它装好。
 
@@ -26,7 +26,7 @@
 - Isaac Sim 内置 PyTorch：2.5.1+cu118
 - 本机 CUDA Toolkit：11.8
 - MSVC：Visual Studio 2022 Build Tools / 14.50
-- cuRobo 代码位置：`D:\isaac-sim\zzcurobo\curobo_for_windows`
+- cuRobo 代码位置：`<REPO_ROOT>`
 
 ## 2. 最终结论
 
@@ -61,7 +61,7 @@ ModuleNotFoundError: No module named 'torch'
 - 它在扩展目录的 `pip_prebundle` 里，比如：
   - `exts/omni.isaac.ml_archive/pip_prebundle`
   - `exts/omni.isaac.core_archive/pip_prebundle`
-- 你的根目录 `python.bat` 是空文件，所以这些路径根本没加进 `PYTHONPATH`。
+- 根目录 `python.bat` 是空文件，所以这些路径根本没加进 `PYTHONPATH`。
 
 ### 问题 2：`setup.py` 在“元数据阶段”就强行导入 `torch`
 
@@ -92,7 +92,7 @@ error STL1002: Unexpected compiler version, expected CUDA 12.4 or newer.
 
 原因：
 
-- 你的机器上是新版本 Visual Studio Build Tools。
+- 当前机器上是新版本 Visual Studio Build Tools。
 - CUDA 11.8 遇到新版 STL / 编译器时会卡这个静态断言。
 
 ### 问题 4：扩展编译成功后，`.pyd` 仍然 DLL 加载失败
@@ -124,7 +124,7 @@ RuntimeError: nvrtc: error: invalid value for --gpu-architecture (-arch)
 
 原因：
 
-- 你的显卡是 `sm_120`。
+- 显卡是 `sm_120`。
 - Isaac Sim 4.5.0 自带的是 `torch 2.5.1 + CUDA 11.8`。
 - 这套运行时不认识 `sm_120` 的 NVRTC JIT 编译目标。
 - 所以不是所有 CUDA 都不能跑，而是“运行时 JIT 编译的那部分”不能跑。
@@ -136,7 +136,7 @@ RuntimeError: nvrtc: error: invalid value for --gpu-architecture (-arch)
 - 直接执行：
 
 ```powershell
-D:\isaac-sim\python.bat -c "import isaacsim"
+<ISAAC_SIM_ROOT>\python.bat -c "import isaacsim"
 ```
 
 会报 `IndexError` 或 `ModuleNotFoundError: isaacsim.simulation_app`。
@@ -147,7 +147,7 @@ D:\isaac-sim\python.bat -c "import isaacsim"
   - `ISAAC_PATH`
   - `EXP_PATH`
   - `CARB_APP_PATH`
-- 你的根入口脚本没有设置这些变量。
+- 根入口脚本没有设置这些变量。
 
 ## 4. 这次到底改了哪些文件
 
@@ -155,11 +155,11 @@ D:\isaac-sim\python.bat -c "import isaacsim"
 
 ### Isaac Sim 根目录
 
-- [`D:\isaac-sim\python.bat`](../../../../python.bat)
+- [`<ISAAC_SIM_ROOT>\python.bat`](../../../../python.bat)
   - 补回 Isaac Sim Python 入口。
   - 增加 `ISAAC_PATH`、`EXP_PATH`、`CARB_APP_PATH`。
 
-- [`D:\isaac-sim\setup_python_env.bat`](../../../../setup_python_env.bat)
+- [`<ISAAC_SIM_ROOT>\setup_python_env.bat`](../../../../setup_python_env.bat)
   - 把 Isaac Sim 的 `pip_prebundle` 路径加回 `PYTHONPATH`。
 
 ### cuRobo 代码
@@ -198,7 +198,7 @@ D:\isaac-sim\python.bat -c "import isaacsim"
 推荐把仓库放在 Isaac Sim 根目录里，像这样：
 
 ```text
-D:\isaac-sim
+<ISAAC_SIM_ROOT>
 ├─ kit
 ├─ exts
 ├─ apps
@@ -212,7 +212,7 @@ D:\isaac-sim
 在 PowerShell 里执行：
 
 ```powershell
-cd D:\isaac-sim\zzcurobo\curobo_for_windows
+cd <REPO_ROOT>
 ```
 
 ### 第 3 步：运行安装脚本
@@ -223,7 +223,7 @@ cd D:\isaac-sim\zzcurobo\curobo_for_windows
 .\install_in_isaacsim.bat
 ```
 
-你应该看到类似输出：
+预期现象类似输出：
 
 ```text
 [1/3] Checking Isaac Sim Python environment...
@@ -258,7 +258,7 @@ Smoke test passed.
 - 做一次 headless 规划
 - 成功后自动退出
 
-## 6. 如果你想手工执行，也可以
+## 6. 如果需要手工执行，也可以
 
 ### 使用自带 wrapper 进入 Isaac Sim Python
 
@@ -271,7 +271,7 @@ Smoke test passed.
 如果 cuRobo 不在 Isaac Sim 根目录下面，也可以显式指定 Isaac Sim 根目录：
 
 ```powershell
-.\isaacsim_python.bat --isaac-root D:\isaac-sim -c "import isaacsim"
+.\isaacsim_python.bat --isaac-root <ISAAC_SIM_ROOT> -c "import isaacsim"
 ```
 
 ### 手工安装
@@ -293,18 +293,18 @@ Smoke test passed.
 ### 原来的脆弱点
 
 - 依赖 Isaac Sim 根目录 `python.bat` 恰好是正常的。
-- 依赖用户自己知道怎么把 `pip_prebundle` 塞进 `PYTHONPATH`。
+- 依赖使用者自行知道怎么把 `pip_prebundle` 塞进 `PYTHONPATH`。
 - 依赖安装时先能看到 `torch`。
 - 依赖 Windows 自动帮你找到 PyTorch 的 DLL。
 - 依赖新显卡在旧 NVRTC 上也正好不炸。
 
 ### 现在的稳定点
 
-- `isaacsim_python.bat` 自己补环境。
+- `isaacsim_python.bat` 会自行补环境。
 - `setup.py` 不会在元数据阶段抢先导 `torch`。
 - `.pyd` 导入前会自动补 `torch/lib`。
 - 遇到 `sm_120 + CUDA 11.8` 会自动禁用 JIT。
-- 安装脚本和验证脚本是成对存在的，不需要靠“装完自己猜”。
+- 安装脚本和验证脚本是成对存在的，不需要靠“装完后自行猜测”。
 
 ## 8. 你会看到哪些“看起来吓人但其实可以接受”的警告
 
@@ -428,7 +428,7 @@ GPU ... compute capability 12.0 is unsupported by this version of iray photoreal
 
 - 不要直接用没修过的空 `python.bat`。
 
-## 10. 我建议你以后怎么用
+## 10. 建议以后怎么用
 
 ### 安装
 
@@ -480,7 +480,7 @@ GPU ... compute capability 12.0 is unsupported by this version of iray photoreal
 如果你什么都不想研究，只想装上，请照这 4 条做：
 
 1. 打开 PowerShell。
-2. `cd D:\isaac-sim\zzcurobo\curobo_for_windows`
+2. `cd <REPO_ROOT>`
 3. 执行 `.\install_in_isaacsim.bat`
 4. 执行 `.\verify_isaacsim_integration.bat`
 

@@ -1,16 +1,25 @@
 """
 Teaching template: pick / place / state machine inside an already-open Isaac Sim GUI.
+教学模板：在已经打开的 Isaac Sim GUI 里运行抓取 / 放置 / 状态机。
 
-How to run:
-1. Start D:\isaac-sim\isaac-sim.selector.bat
+How to run / 运行方式:
+1. Start Isaac Sim from `isaac-sim.selector.bat`
+   通过 `isaac-sim.selector.bat` 启动 Isaac Sim
 2. Enter Isaac Sim Full
+   进入 Isaac Sim Full
 3. Open Window > Script Editor
+   打开 Window > Script Editor
 4. Open this file and press Run
+   打开本文件并点击 Run
 
-This script is intentionally beginner-friendly:
+This script is intentionally beginner-friendly.
+这个脚本刻意保持入门友好。
 - cuRobo planning and robot execution are real.
+  cuRobo 规划和机器人执行都是真实调用。
 - Object "attachment" is simplified for teaching: after grasp, the cube visually follows the hand.
+  物体“附着”做了教学简化：抓取后方块会在视觉上跟随末端执行器。
 - The script keeps the state machine explicit so that it is easy to edit.
+  状态机保持显式展开，便于继续修改。
 """
 
 import asyncio
@@ -55,6 +64,7 @@ from curobo.wrap.reacher.motion_gen import MotionGen, MotionGenConfig, MotionGen
 
 # -----------------------------
 # Step 1: edit this config block
+# 第一步：先改这个配置块
 # -----------------------------
 RESET_STAGE_ON_RUN = True
 ROBOT_CFG_NAME = "franka.yml"
@@ -79,10 +89,13 @@ ATTACH_OBJECT_TO_COLLISION_MODEL = True
 PLAYBACK_FRAME_STEP = 2
 GRIPPER_ANIMATION_STEPS = 24
 
-# Scene modeling:
+# Scene modeling / 场景建模:
 # - Static workcell geometry lives under /World/scene
+#   静态工作单元几何体放在 /World/scene
 # - Task object lives under /World/task
+#   任务物体放在 /World/task
 # - Pick/place markers live under /World/markers
+#   抓取/放置标记放在 /World/markers
 SCENE_STATIC_BOXES = [
     {
         "path": "/World/scene/table_top",

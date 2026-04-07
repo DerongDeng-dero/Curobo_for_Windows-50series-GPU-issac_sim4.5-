@@ -1,4 +1,4 @@
-# Installable Version Manual
+﻿# Installable Version Manual
 
 ## 1. What this package is
 
@@ -61,7 +61,7 @@ Purpose:
 
 Purpose:
 
-- explains how to load your own USD scene
+- explains how to load a user-provided USD scene
 - explains how to attach the pick/place state machine to that scene
 
 ### [`docs/en_version/curobo_isaacsim_windows_full_fix_guide.en.md`](./curobo_isaacsim_windows_full_fix_guide.en.md)
@@ -151,7 +151,7 @@ Purpose:
 
 - in-app template that loads an already opened or explicitly selected USD scene
 - extracts obstacles from configured roots
-- attaches the pick/place state machine to your own scene
+- attaches the pick/place state machine to a user-provided scene
 
 ### [`run_isaacsim_curobo_demo.bat`](../../run_isaacsim_curobo_demo.bat)
 
@@ -168,14 +168,14 @@ Current default:
 ### Standard flow
 
 ```powershell
-cd D:\isaac-sim\zzcurobo\curobo_for_windows
+cd <REPO_ROOT>
 .\install_in_isaacsim.bat
 .\verify_isaacsim_integration.bat
 ```
 
 ### Debug flow
 
-If you want to inspect things manually:
+For manual inspection:
 
 ```powershell
 .\isaacsim_python.bat -c "import isaacsim, torch"
@@ -194,7 +194,7 @@ If you want to inspect things manually:
 Recommended habit:
 
 - always run smoke first after installation or compatibility changes
-- then use the formal demo or in-app scripts depending on your goal
+- then use the formal demo or in-app scripts according to the workflow goal
 
 ## 4. Why this is different from a direct `pip install -e .`
 

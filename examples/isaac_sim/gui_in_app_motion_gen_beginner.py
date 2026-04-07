@@ -1,9 +1,15 @@
 """
-Run this file from an already-open Isaac Sim GUI:
-Window > Script Editor > Open > this file > Run
+Run this file from an already-open Isaac Sim GUI.
+在已经打开的 Isaac Sim GUI 中运行这个脚本。
 
-Do not run this file with isaac-sim.bat --exec or isaacsim_python.bat.
-This script assumes Isaac Sim is already running and does not create SimulationApp.
+Window > Script Editor > Open > this file > Run
+路径：Window > Script Editor > Open > 打开本文件 > Run
+
+Do not run this file with `isaac-sim.bat --exec` or `isaacsim_python.bat`.
+不要用 `isaac-sim.bat --exec` 或 `isaacsim_python.bat` 运行这个脚本。
+
+This script assumes Isaac Sim is already running and does not create `SimulationApp`.
+这个脚本假设 Isaac Sim 已经在运行，不会自行创建 `SimulationApp`。
 """
 
 import asyncio
@@ -41,6 +47,7 @@ from curobo.util_file import get_robot_configs_path, join_path, load_yaml
 from curobo.wrap.reacher.motion_gen import MotionGen, MotionGenConfig, MotionGenPlanConfig
 
 
+# Basic template configuration / 基础模板配置
 ROBOT_CFG_NAME = "franka.yml"
 GOAL_POSITION = [0.45, 0.0, 0.35]
 GOAL_QUATERNION = [1.0, 0.0, 0.0, 0.0]
@@ -220,7 +227,10 @@ async def main() -> None:
         await _next_frame(PLAYBACK_FRAME_STEP)
 
     print("IN_APP_BEGINNER: trajectory playback finished", flush=True)
-    print("IN_APP_BEGINNER: you can now modify this file and re-run it from Script Editor", flush=True)
+    print(
+        "IN_APP_BEGINNER: modify the config block in this file and re-run it from Script Editor",
+        flush=True,
+    )
 
 
 async def _run() -> None:

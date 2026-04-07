@@ -1,4 +1,4 @@
-# Windows + NVIDIA RTX 50-Series + Isaac Sim 4.5+ cuRobo Documentation Reading Order and Overview
+﻿# Windows + NVIDIA RTX 50-Series + Isaac Sim 4.5+ cuRobo Documentation Reading Order and Overview
 
 ## 1. What this document is for
 
@@ -18,13 +18,13 @@ The current documents cover:
 - in-app GUI usage
 - custom scene building
 - pick/place state machines
-- loading your own USD scene into that state machine
+- loading a user-provided USD scene into that state machine
 - the full repair log and maintenance notes
 
 When the document count grows, two problems appear immediately:
 
-1. you do not know what to read first
-2. you do not know what each document is actually for
+1. the reading order is unclear
+2. the purpose of each document is unclear
 
 This file is the main navigation page for the user-facing documentation in this Windows + Isaac Sim + cuRobo workflow.
 
@@ -32,7 +32,7 @@ This file is the main navigation page for the user-facing documentation in this 
 
 ## 2. Recommended reading order
 
-If you are starting from zero, read the documents in this order:
+For a fresh setup, read the documents in this order:
 
 (1) [`README.md`](../../README.md)
 
@@ -50,11 +50,11 @@ If you are starting from zero, read the documents in this order:
 
 (8) [`curobo_isaacsim_windows_full_fix_guide.en.md`](./curobo_isaacsim_windows_full_fix_guide.en.md)
 
-If installation is already complete and you only need the GUI workflow, start from `(4)`.
+If installation is already complete and only the GUI workflow is needed, start from `(4)`.
 
-If you already have your own USD scene and want to attach the pick/place state machine to it, start from `(7)`.
+For an existing user-provided USD scene, start from `(7)` to attach the pick/place state machine.
 
-If you are maintaining or upgrading the environment, read `(3)` and `(8)`.
+For maintenance or upgrade work, read `(3)` and `(8)`.
 
 ---
 
@@ -68,9 +68,9 @@ Read:
 
 Use this path if:
 
-- this is your first Windows + Isaac Sim + cuRobo setup
-- this is your first time using cuRobo inside Isaac Sim
-- you want the safest step-by-step route
+- this is the first Windows + Isaac Sim + cuRobo setup in the current environment
+- this is the first time cuRobo is being used inside Isaac Sim in the current environment
+- the safest step-by-step route is preferred
 
 ## 3.2 Path B: already installed, only need GUI usage
 
@@ -81,7 +81,7 @@ Read:
 Use this path if:
 
 - the environment is already healthy
-- your goal is to start Isaac Sim Full normally and use cuRobo inside the GUI
+- the goal is to start Isaac Sim Full normally and use cuRobo inside the GUI
 
 ## 3.3 Path C: already planning, now want task flow
 
@@ -91,10 +91,10 @@ Read:
 
 Use this path if:
 
-- you can already run single-goal motion generation
-- you now want a pick/place state machine
+- single-goal motion generation already works
+- the next goal is a pick/place state machine
 
-## 3.4 Path D: already have your own USD scene
+## 3.4 Path D: already have a user-provided USD scene
 
 Read:
 
@@ -102,8 +102,8 @@ Read:
 
 Use this path if:
 
-- you already have tables, fixtures, bins, blockers, and other USD scene assets
-- you want the state machine to run inside your real authored workcell
+- tables, fixtures, bins, blockers, and other USD scene assets already exist
+- the goal is to run the state machine inside an authored workcell
 
 ## 3.5 Path E: maintainer, debugger, or upgrader
 
@@ -113,8 +113,8 @@ Read:
 
 Use this path if:
 
-- you need to know what was changed in the delivery
-- you plan to maintain, migrate, or upgrade this setup
+- the delivery changes need to be understood
+- maintenance, migration, or upgrade work is planned for this setup
 
 ---
 
@@ -126,7 +126,7 @@ Role:
 
 - top-level entry point
 
-What it gives you:
+What it provides:
 
 - the primary documentation links
 - the shortest install and demo commands
@@ -138,7 +138,7 @@ Role:
 
 - full installation and repair tutorial
 
-What it gives you:
+What it provides:
 
 - the practical Windows + Isaac Sim installation route
 - the real reasons the original install path fails
@@ -150,7 +150,7 @@ Role:
 
 - delivery manual for the installable version
 
-What it gives you:
+What it provides:
 
 - the purpose of the key scripts and documents
 - the structure of the delivered Windows build
@@ -162,7 +162,7 @@ Role:
 
 - beginner guide for in-app GUI usage
 
-What it gives you:
+What it provides:
 
 - why `selector.bat` is a valid way to start Isaac Sim and still use cuRobo
 - the difference between standalone and in-app scripts
@@ -174,12 +174,12 @@ Role:
 
 - next-step guide for custom robots and scenes
 
-What it gives you:
+What it provides:
 
 - how to change the robot
 - how to change tables and obstacles
 - how to keep the cuRobo world synchronized with the GUI scene
-- how to evolve from a single-plan demo into your own scene template
+- how to evolve from a single-plan demo into a custom scene template
 
 ## (6) [`ISAACSIM_PICK_PLACE_STATE_MACHINE_AND_SCENE_MODELING_GUIDE.en.md`](./ISAACSIM_PICK_PLACE_STATE_MACHINE_AND_SCENE_MODELING_GUIDE.en.md)
 
@@ -187,7 +187,7 @@ Role:
 
 - pick/place state machine and teaching-scene modeling guide
 
-What it gives you:
+What it provides:
 
 - a full task flow: pregrasp, grasp, close, lift, preplace, place, retreat
 - the structure of the teaching state machine
@@ -197,14 +197,14 @@ What it gives you:
 
 Role:
 
-- guide for attaching the pick/place state machine to your own USD scene
+- guide for attaching the pick/place state machine to a user-provided USD scene
 
-What it gives you:
+What it provides:
 
-- how to load your own USD scene
+- how to load a user-provided USD scene
 - how to define obstacle roots for cuRobo
 - how to attach existing pick object / pick target / place target prims
-- how to auto-create runtime markers when your authored scene does not have them yet
+- how to auto-create runtime markers when the authored scene does not have them yet
 
 ## (8) [`curobo_isaacsim_windows_full_fix_guide.en.md`](./curobo_isaacsim_windows_full_fix_guide.en.md)
 
@@ -212,7 +212,7 @@ Role:
 
 - full repair log and maintenance guide
 
-What it gives you:
+What it provides:
 
 - the actual environment background
 - the real failure chain and root causes
@@ -232,7 +232,7 @@ Read:
 Run:
 
 ```powershell
-cd D:\isaac-sim\zzcurobo\curobo_for_windows
+cd <REPO_ROOT>
 .\install_in_isaacsim.bat
 .\verify_isaacsim_integration.bat
 ```
@@ -247,7 +247,7 @@ Goal:
 
 - understand `selector -> Isaac Sim Full -> Script Editor -> Run`
 
-### Step 3: build your own base workcell scene
+### Step 3: build a base workcell scene
 
 Read:
 
@@ -267,7 +267,7 @@ Goal:
 
 - understand the state machine and teaching scene modeling
 
-### Step 5: attach your own USD scene
+### Step 5: attach a user-provided USD scene
 
 Read:
 
@@ -300,11 +300,11 @@ Goal:
 
 (4) `ISAACSIM_SELECTOR_IN_APP_CUROBO_BEGINNER_GUIDE.en.md`: use cuRobo inside a normally started Isaac Sim GUI.
 
-(5) `ISAACSIM_CUSTOM_SCENE_WORKFLOW_BEGINNER_GUIDE.en.md`: begin building your own robot and scene workflow.
+(5) `ISAACSIM_CUSTOM_SCENE_WORKFLOW_BEGINNER_GUIDE.en.md`: begin building a custom robot and scene workflow.
 
 (6) `ISAACSIM_PICK_PLACE_STATE_MACHINE_AND_SCENE_MODELING_GUIDE.en.md`: turn one-shot planning into a pick/place state machine.
 
-(7) `ISAACSIM_USD_SCENE_PICK_PLACE_WORKFLOW_GUIDE.en.md`: attach your own USD scene to the state machine.
+(7) `ISAACSIM_USD_SCENE_PICK_PLACE_WORKFLOW_GUIDE.en.md`: attach a user-provided USD scene to the state machine.
 
 (8) `curobo_isaacsim_windows_full_fix_guide.en.md`: deep repair history and maintenance reference.
 
@@ -312,14 +312,14 @@ Goal:
 
 ## 7. Short recommendation
 
-If the installation already works and your next goal is task execution in your own scene, the shortest useful reading path is:
+If the installation already works and the next goal is task execution in a user-provided scene, the shortest useful reading path is:
 
 - `(4)`
 - `(5)`
 - `(6)`
 - `(7)`
 
-If you later need to maintain or upgrade the stack, then add:
+If maintenance or upgrade work is needed later, then add:
 
 - `(3)`
 - `(8)`

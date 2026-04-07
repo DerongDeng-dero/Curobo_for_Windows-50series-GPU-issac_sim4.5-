@@ -1,8 +1,8 @@
-# Beginner Guide: Start Isaac Sim Normally and Use cuRobo Inside the GUI
+﻿# Beginner Guide: Start Isaac Sim Normally and Use cuRobo Inside the GUI
 
 ## 1. Answer to the core question first
 
-### 1.1 Can you start Isaac Sim normally through `isaac-sim.selector.bat` and then use cuRobo inside the software?
+### 1.1 Can Isaac Sim be started normally through `isaac-sim.selector.bat` and then run cuRobo inside the software?
 
 Yes.
 
@@ -73,30 +73,30 @@ Examples:
 
 Typical usage:
 
-1. start `D:\isaac-sim\isaac-sim.selector.bat`
+1. start `<ISAAC_SIM_ROOT>\isaac-sim.selector.bat`
 2. enter `Isaac Sim Full`
 3. open `Window -> Script Editor`
 4. load and run the script there
 
 ## 3. Why `selector.bat` can now see cuRobo
 
-Your current environment is no longer the original broken baseline.
+The current environment is no longer the original broken baseline.
 
 The working chain is:
 
 1. [`isaac-sim.selector.bat`](../../../../isaac-sim.selector.bat)
    - calls [`setup_python_env.bat`](../../../../setup_python_env.bat)
 2. [`setup_python_env.bat`](../../../../setup_python_env.bat)
-   - exposes `D:\isaac-sim\site`
+   - exposes `<ISAAC_SIM_ROOT>\site`
 3. [`site/sitecustomize.py`](../../../../site/sitecustomize.py)
    - exposes `python_packages`
    - also adjusts package priority for `numpy` and `PIL` when needed
-4. you already installed cuRobo through:
+4. cuRobo was already installed through:
    - [`install_in_isaacsim.bat`](../../install_in_isaacsim.bat)
 
 Practical conclusion:
 
-- if you start Isaac Sim from this repaired `D:\isaac-sim`
+- if Isaac Sim is started from this repaired `<ISAAC_SIM_ROOT>`
 - and cuRobo has already been installed into that environment
 
 then the GUI session should be able to import `curobo`.
@@ -113,7 +113,7 @@ Best for:
 Command:
 
 ```powershell
-cd D:\isaac-sim\zzcurobo\curobo_for_windows
+cd <REPO_ROOT>
 .\verify_isaacsim_integration.bat
 ```
 
@@ -127,7 +127,7 @@ Best for:
 Command:
 
 ```powershell
-cd D:\isaac-sim\zzcurobo\curobo_for_windows
+cd <REPO_ROOT>
 .\run_isaacsim_curobo_demo.bat
 ```
 
@@ -141,7 +141,7 @@ Best for:
 
 - normal GUI workflow
 - looking at the scene while editing scripts
-- gradually building your own scene instead of running a full automatic demo
+- gradually building a user-provided scene instead of running a full automatic demo
 
 This guide focuses on this mode.
 
@@ -150,7 +150,7 @@ This guide focuses on this mode.
 ### 5.1 Install or repair
 
 ```powershell
-cd D:\isaac-sim\zzcurobo\curobo_for_windows
+cd <REPO_ROOT>
 .\install_in_isaacsim.bat
 ```
 
@@ -160,7 +160,7 @@ cd D:\isaac-sim\zzcurobo\curobo_for_windows
 .\verify_isaacsim_integration.bat
 ```
 
-You should see output similar to:
+Expected output:
 
 ```text
 Smoke test passed.
@@ -175,7 +175,7 @@ If that does not pass, do not start debugging the GUI workflow yet.
 Run:
 
 ```powershell
-D:\isaac-sim\isaac-sim.selector.bat
+<ISAAC_SIM_ROOT>\isaac-sim.selector.bat
 ```
 
 ### 6.2 Which app to choose
@@ -195,7 +195,7 @@ Recommended:
 - `Window -> Console`
 - `Window -> Extensions`
 
-You will also need:
+Also required:
 
 - `Window -> Script Editor`
 
@@ -276,7 +276,7 @@ Result:
 Check:
 
 - whether cuRobo was installed through [`install_in_isaacsim.bat`](../../install_in_isaacsim.bat)
-- whether you started Isaac Sim from the repaired `D:\isaac-sim`
+- whether you started Isaac Sim from the repaired `<ISAAC_SIM_ROOT>`
 
 ### `No module named 'torch'`
 
@@ -300,7 +300,7 @@ Once the in-app beginner script works, continue in this order:
 2. read the pick/place state machine guide
 3. read the USD scene workflow guide
 
-That path takes you from:
+That path moves the workflow from:
 
 - “GUI can import cuRobo”
 
@@ -310,7 +310,7 @@ to:
 
 ## 13. Short version
 
-If you only want the shortest practical route:
+Shortest practical route:
 
 1. run [`verify_isaacsim_integration.bat`](../../verify_isaacsim_integration.bat)
 2. start [`isaac-sim.selector.bat`](../../../../isaac-sim.selector.bat)

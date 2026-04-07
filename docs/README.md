@@ -1,4 +1,4 @@
-[![EN](https://img.shields.io/badge/Docs-EN-2563eb?style=for-the-badge)](./README.md)
+﻿[![EN](https://img.shields.io/badge/Docs-EN-2563eb?style=for-the-badge)](./README.md)
 [![ZH-CN](https://img.shields.io/badge/Docs-ZH--CN-16a34a?style=for-the-badge)](./README.zh-CN.md)
 [![GPU](https://img.shields.io/badge/GPU-NVIDIA%20RTX%2050--Series-16a34a?style=flat-square)](../README.md#repository-scope)
 [![Isaac Sim](https://img.shields.io/badge/Isaac%20Sim-4.5%2B-76B900?style=flat-square)](../README.md#repository-scope)
@@ -37,7 +37,7 @@ GUI in-app usage:
 2. [Custom scene workflow beginner guide](./en_version/ISAACSIM_CUSTOM_SCENE_WORKFLOW_BEGINNER_GUIDE.en.md)
 3. [Pick-place state machine and scene modeling guide](./en_version/ISAACSIM_PICK_PLACE_STATE_MACHINE_AND_SCENE_MODELING_GUIDE.en.md)
 
-Reuse your own USD scene:
+Reuse a user-provided USD scene:
 
 1. [USD scene pick/place workflow guide](./en_version/ISAACSIM_USD_SCENE_PICK_PLACE_WORKFLOW_GUIDE.en.md)
 2. [Full repair log and maintenance guide](./en_version/curobo_isaacsim_windows_full_fix_guide.en.md)
@@ -50,7 +50,7 @@ Reuse your own USD scene:
 4. [Selector + in-app cuRobo beginner guide](./en_version/ISAACSIM_SELECTOR_IN_APP_CUROBO_BEGINNER_GUIDE.en.md)
 5. [Custom scene workflow beginner guide](./en_version/ISAACSIM_CUSTOM_SCENE_WORKFLOW_BEGINNER_GUIDE.en.md)
 6. [Pick-place state machine and scene modeling guide](./en_version/ISAACSIM_PICK_PLACE_STATE_MACHINE_AND_SCENE_MODELING_GUIDE.en.md)
-7. [Load your own USD scene, reuse an existing articulation, and attach the pick-place state machine guide](./en_version/ISAACSIM_USD_SCENE_PICK_PLACE_WORKFLOW_GUIDE.en.md)
+7. [Load a user-provided USD scene, reuse an existing articulation, and attach the pick-place state machine guide](./en_version/ISAACSIM_USD_SCENE_PICK_PLACE_WORKFLOW_GUIDE.en.md)
 8. [Full repair log and maintenance guide](./en_version/curobo_isaacsim_windows_full_fix_guide.en.md)
 
 ## Chinese Documents

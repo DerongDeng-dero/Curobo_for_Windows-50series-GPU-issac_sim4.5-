@@ -1,4 +1,4 @@
-[![EN](https://img.shields.io/badge/Docs-EN-2563eb?style=for-the-badge)](./README.md)
+﻿[![EN](https://img.shields.io/badge/Docs-EN-2563eb?style=for-the-badge)](./README.md)
 [![ZH-CN](https://img.shields.io/badge/Docs-ZH--CN-16a34a?style=for-the-badge)](./README.zh-CN.md)
 [![GPU](https://img.shields.io/badge/GPU-NVIDIA%20RTX%2050--Series-16a34a?style=flat-square)](../README.zh-CN.md)
 [![Isaac Sim](https://img.shields.io/badge/Isaac%20Sim-4.5%2B-76B900?style=flat-square)](../README.zh-CN.md)
@@ -37,9 +37,9 @@ GUI 软件内使用：
 2. [自定义场景工作流入门指南](./zh-cn_version/ISAACSIM_CUSTOM_SCENE_WORKFLOW_BEGINNER_GUIDE.zh-CN.md)
 3. [抓取 / 放置状态机与场景建模指南](./zh-cn_version/ISAACSIM_PICK_PLACE_STATE_MACHINE_AND_SCENE_MODELING_GUIDE.zh-CN.md)
 
-复用自己的 USD 场景：
+复用用户提供的 USD 场景：
 
-1. [加载自己的 USD 场景、复用现有 articulation 并接入抓放状态机指南](./zh-cn_version/ISAACSIM_USD_SCENE_PICK_PLACE_WORKFLOW_GUIDE.zh-CN.md)
+1. [加载用户提供的 USD 场景、复用现有 articulation 并接入抓放状态机指南](./zh-cn_version/ISAACSIM_USD_SCENE_PICK_PLACE_WORKFLOW_GUIDE.zh-CN.md)
 2. [完整修复记录与维护指南](./zh-cn_version/curobo_isaacsim_windows_full_fix_guide.zh-CN.md)
 
 ## 中文文档
@@ -50,7 +50,7 @@ GUI 软件内使用：
 4. [Selector + 软件内使用 cuRobo 小白指南](./zh-cn_version/ISAACSIM_SELECTOR_IN_APP_CUROBO_BEGINNER_GUIDE.zh-CN.md)
 5. [自定义场景工作流入门指南](./zh-cn_version/ISAACSIM_CUSTOM_SCENE_WORKFLOW_BEGINNER_GUIDE.zh-CN.md)
 6. [抓取 / 放置状态机与场景建模指南](./zh-cn_version/ISAACSIM_PICK_PLACE_STATE_MACHINE_AND_SCENE_MODELING_GUIDE.zh-CN.md)
-7. [加载自己的 USD 场景、复用现有 articulation 并接入抓放状态机指南](./zh-cn_version/ISAACSIM_USD_SCENE_PICK_PLACE_WORKFLOW_GUIDE.zh-CN.md)
+7. [加载用户提供的 USD 场景、复用现有 articulation 并接入抓放状态机指南](./zh-cn_version/ISAACSIM_USD_SCENE_PICK_PLACE_WORKFLOW_GUIDE.zh-CN.md)
 8. [完整修复记录与维护指南](./zh-cn_version/curobo_isaacsim_windows_full_fix_guide.zh-CN.md)
 
 ## English Documents

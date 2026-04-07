@@ -1,4 +1,4 @@
-<!--
+﻿<!--
 Copyright (c) 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 
 NVIDIA CORPORATION, its affiliates and licensors retain all intellectual
@@ -60,7 +60,7 @@ workflows in this fork.
 
 - If you need installation from scratch on Windows, start with the [Windows + Isaac Sim 4.5+ tutorial for RTX 50-series GPUs](./docs/en_version/WINDOWS_ISAACSIM_CUROBO_INSTALL_TUTORIAL.en.md)
 - If you already have Isaac Sim running and want an in-app workflow, start with the [Selector + in-app beginner guide](./docs/en_version/ISAACSIM_SELECTOR_IN_APP_CUROBO_BEGINNER_GUIDE.en.md)
-- If you want to reuse your own USD scene, go directly to the [USD scene pick/place workflow guide](./docs/en_version/ISAACSIM_USD_SCENE_PICK_PLACE_WORKFLOW_GUIDE.en.md)
+- If you want to reuse a user-provided USD scene, go directly to the [USD scene pick/place workflow guide](./docs/en_version/ISAACSIM_USD_SCENE_PICK_PLACE_WORKFLOW_GUIDE.en.md)
 - If you want the complete reading order, use the [docs hub](./docs/README.md)
 
 ## Documentation
@@ -82,7 +82,7 @@ Chinese:
 ## Windows / Isaac Sim Quick Start
 
 ```powershell
-cd D:\isaac-sim\zzcurobo\curobo_for_windows
+cd <REPO_ROOT>
 .\install_in_isaacsim.bat
 .\verify_isaacsim_integration.bat
 ```
@@ -90,7 +90,7 @@ cd D:\isaac-sim\zzcurobo\curobo_for_windows
 ## Windows / Isaac Sim Demo Launch
 
 ```powershell
-cd D:\isaac-sim\zzcurobo\curobo_for_windows
+cd <REPO_ROOT>
 .\run_isaacsim_curobo_demo.bat
 ```
 

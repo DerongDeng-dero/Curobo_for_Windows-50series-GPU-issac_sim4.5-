@@ -1,32 +1,32 @@
-# Isaac Sim + cuRobo Custom Scene Workflow Guide
+﻿# Isaac Sim + cuRobo Custom Scene Workflow Guide
 
 ## 1. What this guide is
 
 This guide is the next step after the in-app beginner guide.
 
-If you have already done the following:
+If the following items are already complete:
 
 - installed the environment successfully
 - passed `verify_isaacsim_integration.bat`
 - entered `Isaac Sim Full`
 - run [`gui_in_app_motion_gen_beginner.py`](../../examples/isaac_sim/gui_in_app_motion_gen_beginner.py)
 
-then you are now in the next phase:
+the workflow is now in the next phase:
 
 - not just proving that the stack runs
-- but starting to build your own scene
+- but starting to build a user-provided scene
 
-## 2. What you need to learn in this phase
+## 2. What this phase covers
 
-To use cuRobo in Isaac Sim long term, you need to learn five things:
+For long-term Isaac Sim + cuRobo use, five topics matter most:
 
 1. change the robot
 2. build a table and obstacle scene
 3. let cuRobo read those obstacles
 4. give a target pose and plan to it
-5. iterate toward your own task script
+5. iterate toward a custom task script
 
-## 3. What this phase gives you
+## 3. What this phase provides
 
 The key in-app template is:
 
@@ -35,7 +35,7 @@ The key in-app template is:
 Compared with the earlier beginner script:
 
 - the beginner script is a minimal proof
-- this script is closer to your own working scene template
+- this script is closer to a reusable scene template
 
 It collects the most common values at the top of the file:
 
@@ -55,7 +55,7 @@ It collects the most common values at the top of the file:
 Run:
 
 ```powershell
-D:\isaac-sim\isaac-sim.selector.bat
+<ISAAC_SIM_ROOT>\isaac-sim.selector.bat
 ```
 
 Enter:
@@ -76,9 +76,9 @@ Open:
 
 Press `Run`.
 
-### 4.4 What you should see
+### 4.4 Expected result
 
-You should see:
+Expected result:
 
 - a robot imported into the stage
 - a goal marker
@@ -91,7 +91,7 @@ If that does not happen, stop and debug this template before trying to build any
 
 ### 5.1 The top configuration block
 
-This is where most of your changes should happen first.
+This is where most early scene changes should happen.
 
 For beginners, the safest order is:
 
@@ -187,7 +187,7 @@ If the YAML is already present, usually you only need to change:
 
 - `ROBOT_CFG_NAME`
 
-### 8.2 If your robot is not under the default paths
+### 8.2 If the robot is not under the default paths
 
 Then you also need:
 
@@ -215,7 +215,7 @@ You must always be able to answer:
 - what is only visual
 - what is actually being extracted into the collision world
 
-If you do not keep that distinction clear, you will eventually hit the classic confusion:
+If that distinction is not kept clear, the classic confusion eventually appears:
 
 - “I can see the object in the GUI, so why did the robot ignore it?”
 
@@ -263,4 +263,4 @@ That takes you from:
 
 to:
 
-- a full task flow in your own authored environment
+- a full task flow in an authored environment

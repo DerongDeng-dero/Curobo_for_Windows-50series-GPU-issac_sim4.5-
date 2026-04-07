@@ -1,16 +1,16 @@
-# Isaac Sim + cuRobo: Load Your Own USD Scene and Attach the Pick/Place State Machine
+﻿# Isaac Sim + cuRobo: Load a User-Provided USD Scene and Attach the Pick/Place State Machine
 
 ## 1. What this guide solves
 
 The earlier pick/place teaching template builds its own small teaching scene.
 
-That is useful when you are still learning the task flow.
+That is useful during early task-flow learning.
 
 But the next real step is different:
 
-- you already have your own USD scene
-- you want to open it normally in Isaac Sim
-- you want to attach the cuRobo pick/place state machine to it
+- a user-provided USD scene is already available
+- the goal is to open it normally in Isaac Sim
+- the goal is to attach the cuRobo pick/place state machine to it
 
 This guide is for that step.
 
@@ -20,31 +20,31 @@ The key script is:
 
 Its role is very explicit:
 
-- load your own USD environment
+- load a user-provided USD environment
 - reuse a robot articulation that already exists in the stage, or inject one at runtime when needed
 - attach the pick/place state machine to that environment
 
 The default recommended path is now:
 
-- keep your own authored USD environment
+- keep the authored USD environment
 - prefer reusing the robot articulation that is already in that USD stage
 - let the script create runtime helpers only when task markers or pick objects are missing
 
-## 2. What you get from this template
+## 2. What this template provides
 
-After running it, you can:
+After running it, the workflow supports:
 
 1. start Isaac Sim Full normally through `selector.bat`
-2. open your own USD scene
+2. open a user-provided USD scene
 3. run the script from Script Editor
 4. let the script extract obstacles from the configured scene roots
 5. reuse the robot already in the scene, or import one when needed
-6. use your existing pick object / pick target / place target, or let the script create runtime markers
+6. reusing existing pick object / pick target / place target prims, or creating runtime markers when needed
 7. execute a full pick/place flow
 
 ## 3. Two ways to use the script
 
-### 3.1 Mode A: open your scene manually in the GUI first
+### 3.1 Mode A: open the scene manually in the GUI first
 
 This is the recommended mode.
 
@@ -56,23 +56,23 @@ OPEN_USD_STAGE_ON_RUN = False
 
 Why it is recommended:
 
-- you can inspect the scene first
-- you can inspect the Stage tree first
-- you can confirm prim paths before running the task logic
+- the scene can be inspected first
+- the Stage tree can be inspected first
+- prim paths can be confirmed before the task logic runs
 
-### 3.2 Mode B: let the script open a USD file for you
+### 3.2 Mode B: let the script open a USD file automatically
 
 Use:
 
 ```python
 OPEN_USD_STAGE_ON_RUN = True
-USD_STAGE_PATH = r"D:\isaac-sim\your_scenes\pick_place_workcell.usd"
+USD_STAGE_PATH = r"<ISAAC_SIM_ROOT>\your_scenes\pick_place_workcell.usd"
 ```
 
 This is useful when:
 
 - the scene path is fixed
-- you want a repeatable workflow on one specific USD file
+- a repeatable workflow on one specific USD file is needed
 
 ## 4. Understand the template design first
 
@@ -85,7 +85,7 @@ You still need to define four things clearly:
 3. which prim is the pick object
 4. which prims are the pick target and place target
 
-If your scene does not already contain task markers, the script can fill the gaps:
+If the scene does not already contain task markers, the script can fill the gaps:
 
 - if `PICK_TARGET_PRIM_PATH` does not exist, it creates a runtime pick marker
 - if `PLACE_TARGET_PRIM_PATH` does not exist, it creates a runtime place marker
@@ -93,7 +93,7 @@ If your scene does not already contain task markers, the script can fill the gap
 
 That makes the transition practical:
 
-- keep the environment from your own USD scene
+- keep the environment from a user-provided USD scene
 - let the task helpers be created at runtime if needed
 
 ## 5. Recommended USD scene structure
@@ -122,7 +122,7 @@ Why this is useful:
 - `/World/task` clearly contains task objects and targets
 - `SCENE_COLLISION_ROOTS = ["/World/scene"]` becomes simple and stable
 
-If your scene tree is different, that is fine. You only need to update:
+If the scene tree is different, that is fine. Only these items need updates:
 
 - `SCENE_COLLISION_ROOTS`
 - `PICK_OBJECT_PRIM_PATH`
@@ -134,24 +134,24 @@ If your scene tree is different, that is fine. You only need to update:
 ### 6.1 Step 1: start Isaac Sim
 
 ```powershell
-D:\isaac-sim\isaac-sim.selector.bat
+<ISAAC_SIM_ROOT>\isaac-sim.selector.bat
 ```
 
 Enter:
 
 - `Isaac Sim Full`
 
-### 6.2 Step 2: open your USD scene
+### 6.2 Step 2: open the USD scene
 
-If you use Mode A:
+For Mode A:
 
 1. click `File -> Open`
-2. select your `.usd` file
+2. select the target `.usd` file
 3. wait for the scene to finish loading
 
 ### 6.3 Step 3: inspect the Stage tree and remember the key prim paths
 
-You need to identify:
+Identify these items:
 
 1. the static environment root path
 2. the robot articulation root path
@@ -169,7 +169,7 @@ Example:
 /World/task/place_target
 ```
 
-### 6.4 Step 4: if your scene has no task markers yet, create simple ones
+### 6.4 Step 4: if the scene has no task markers yet, create simple ones
 
 Recommended first approach:
 
@@ -204,7 +204,7 @@ Most important settings:
 - `ROBOT_BASE_POSITION`
 - `STATE_MACHINE_CONFIG`
 
-Recommended beginner robot settings when your USD already contains the robot:
+Recommended beginner robot settings when the USD scene already contains the robot:
 
 ```python
 ROBOT_SCENE_MODE = "reuse_existing"
@@ -212,7 +212,7 @@ EXISTING_ROBOT_PRIM_PATH = "/World/Franka"
 RESET_EXISTING_ROBOT_TO_RETRACT = True
 ```
 
-Use `ROBOT_SCENE_MODE = "import_robot"` only when your authored USD scene does not contain the robot yet.
+Use `ROBOT_SCENE_MODE = "import_robot"` only when the authored USD scene does not contain the robot yet.
 
 For task orientation, keep this by default:
 
@@ -231,7 +231,7 @@ Press `Run` in Script Editor.
 
 ### 6.8 Step 8: inspect the console output
 
-You should see logs similar to:
+Expected logs:
 
 ```text
 USD_PICK_PLACE_TEMPLATE: using the stage that is already open in the GUI
@@ -268,11 +268,11 @@ Example:
 SCENE_COLLISION_ROOTS = ["/World/scene"]
 ```
 
-If your environment lives somewhere else, change it.
+If the environment lives somewhere else, change it.
 
 ### 7.2 `EXTRA_WORLD_IGNORE_PATHS`
 
-Use this when your collision root is too broad, such as:
+Use this when the collision root is too broad, such as:
 
 ```python
 SCENE_COLLISION_ROOTS = ["/World"]
@@ -315,13 +315,13 @@ Why:
 
 - real USD scenes usually contain mesh geometry
 
-If your scene is extremely box-like and simple, `PRIMITIVE` may also work.
+If the scene is extremely box-like and simple, `PRIMITIVE` may also work.
 
 ### 7.6 `ROBOT_SCENE_MODE`, `EXISTING_ROBOT_PRIM_PATH`, and `RESET_EXISTING_ROBOT_TO_RETRACT`
 
 This is one of the most important additions in the upgraded template.
 
-If your USD scene already contains the robot, the recommended setting is:
+If the USD scene already contains the robot, the recommended setting is:
 
 ```python
 ROBOT_SCENE_MODE = "reuse_existing"
@@ -335,7 +335,7 @@ This means:
 - directly attach to the articulation under `/World/Franka`
 - reset the robot to a clean retract pose before starting the task flow
 
-If your USD scene does not contain the robot yet, you can still use:
+If the USD scene does not contain the robot yet, this configuration still works:
 
 ```python
 ROBOT_SCENE_MODE = "import_robot"
@@ -355,7 +355,7 @@ That means:
 - you define the task orientation in world coordinates
 - the script converts it into the robot base frame before planning
 
-This matters when your robot is already positioned inside your authored workcell and is not sitting at the world origin.
+This matters when the robot is already positioned inside the authored workcell and is not sitting at the world origin.
 
 ## 8. Scene modeling guidance for cuRobo-friendly USD scenes
 
@@ -447,7 +447,7 @@ For the first working version, I still recommend keeping the base upright and cl
 
 ## 9. Typical usage examples
 
-### 9.1 Your scene already follows the recommended structure
+### 9.1 The scene already follows the recommended structure
 
 Then you often only need:
 
