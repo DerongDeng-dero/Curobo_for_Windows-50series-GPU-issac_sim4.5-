@@ -39,7 +39,7 @@ Windows + Isaac Sim 4.5 path for:
 - If you want to reuse your own USD scene: go directly to the USD scene pick/place workflow guide
 - If you want the main standalone scene demo: run `examples/isaac_sim/simple_stacking.py`
 
-## Documentation
+## Documentation(Read it before using it.)
 
 Chinese:
 
